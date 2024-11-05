@@ -11,7 +11,15 @@
 #include <utils/console_io/include/app_log.h>
 #include <utils/timer/include/app_timer.h>
 
+#if defined(C7X_FAMILY) || defined(R5F) || defined(C66)
+/*LDRA_NOANALYSIS*/
+/* TIOVX-1766- Host only Id: TIOVX_CODE_COVERAGE_HOST_ONLY_PLATFORM_UM001 */
+#endif
 const char *tivxPlatformGetEnv(const char *env_var);
+#if defined(C7X_FAMILY) || defined(R5F) || defined(C66)
+/*LDRA_ANALYSIS*/
+/* END: TIOVX_CODE_COVERAGE_HOST_ONLY_PLATFORM_UM001 */
+#endif
 
 uint64_t tivxPlatformGetTimeInUsecs(void)
 {
@@ -33,6 +41,10 @@ void ownPlatformDeactivate(void)
 
 }
 
+#if defined(C7X_FAMILY) || defined(R5F) || defined(C66)
+/*LDRA_NOANALYSIS*/
+/* TIOVX-1766- Host only Id: TIOVX_CODE_COVERAGE_HOST_ONLY_PLATFORM_UM001 */
+#endif
 const char *tivxPlatformGetEnv(const char *env_var)
 {
     const char *value=" ";
@@ -43,6 +55,10 @@ const char *tivxPlatformGetEnv(const char *env_var)
     }
     return (value);
 }
+#if defined(C7X_FAMILY) || defined(R5F) || defined(C66)
+/*LDRA_ANALYSIS*/
+/* END: TIOVX_CODE_COVERAGE_HOST_ONLY_PLATFORM_UM001 */
+#endif
 
 #if defined(A72) || defined(A53)
 #define TIVX_TARGET_DEFAULT_STACK_SIZE  (128U*1024U)
@@ -112,8 +128,11 @@ void tivxPlatformCreateTargetId(vx_enum target_id, uint32_t i, const char *name,
         {
             VX_PRINT(VX_ZONE_ERROR, "Could not Add Target\n");
         }
-        ownPlatformGetTargetName(target_id, target_name);
-        VX_PRINT(VX_ZONE_INIT, "Added target %s \n", target_name);
+        else
+        {
+            ownPlatformGetTargetName(target_id, target_name);
+            VX_PRINT(VX_ZONE_INIT, "Added target %s \n", target_name);
+        }
     }
 }
 
@@ -122,7 +141,7 @@ void tivxPlatformDeleteTargetId(vx_enum target_id)
     vx_status status;
 
     status = ownTargetDelete(target_id);
-    if ((vx_status)VX_SUCCESS != status)
+    if ((vx_status)VX_SUCCESS != status) /* TIOVX-1958- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_RTOS_TIVX_PLATFORM_UBR001 */
     {
         VX_PRINT(VX_ZONE_ERROR, "Could not Delete Target\n");
     }

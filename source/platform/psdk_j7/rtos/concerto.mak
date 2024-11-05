@@ -1,5 +1,4 @@
 
-ifeq ($(TARGET_PLATFORM), $(filter $(TARGET_PLATFORM), J721E J721S2 J784S4 AM62A J722S))
 ifeq ($(TARGET_OS), $(filter $(TARGET_OS), FREERTOS SAFERTOS))
 
 include $(PRELUDE)
@@ -15,11 +14,19 @@ CSOURCES    := 	tivx_event.c \
 				../common/tivx_mem.c \
 				../common/tivx_ipc.c \
 				../common/tivx_platform.c \
-				../common/tivx_host.c
+				../common/tivx_host.c \
+				../common/tivx_perf.c
 
 IDIRS       += $(HOST_ROOT)/source/include
 IDIRS       += $(HOST_ROOT)/source/platform/psdk_j7/common
 IDIRS       += $(CUSTOM_KERNEL_PATH)/include
+DEFS        += LDRA_UNTESTABLE_CODE
+# This is used to signify which sections of code is only applicable
+# for the host for code coverage purposes. It has been left defined
+# for all cores, but can be wrapped in the appropriate CPU when generating
+# code coverage reports.
+DEFS        += HOST_ONLY
+
 ifeq ($(RTOS_SDK), mcu_plus_sdk)
     IDIRS       += $(MCU_PLUS_SDK_PATH)/source
     IDIRS       += $(MCU_PLUS_SDK_PATH)/source/kernel/dpl
@@ -54,14 +61,11 @@ CSOURCES += ../common/tivx_target_config_mpu1_0.c
 SKIPBUILD=0
 endif
 
-ifeq ($(TARGET_PLATFORM), $(filter $(TARGET_PLATFORM), J721E J721S2 J784S4 AM62A J722S))
 ifeq ($(TARGET_CPU),R5F)
 CSOURCES += soc/tivx_target_config_r5f_${SOC}.c
 SKIPBUILD=0
 endif
-endif
 
 include $(FINALE)
 
-endif
 endif

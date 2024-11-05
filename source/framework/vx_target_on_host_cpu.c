@@ -91,13 +91,13 @@ static void ownTargetCmdDescHandlerHost(const tivx_obj_desc_cmd_t *cmd_obj_desc)
     uint16_t node_obj_desc_id;
     tivx_obj_desc_node_t *node_obj_desc;
 
-    switch(cmd_obj_desc->cmd_id)
+    switch(cmd_obj_desc->cmd_id) /* TIOVX-1937- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_ON_HOST_CPU_UBR003 */
     {
         case (vx_enum)TIVX_CMD_NODE_USER_CALLBACK:
             node_obj_desc_id = cmd_obj_desc->obj_desc_id[0];
             node_obj_desc = (tivx_obj_desc_node_t*)ownObjDescGet(node_obj_desc_id);
 
-            if( ownObjDescIsValidType( (tivx_obj_desc_t*)node_obj_desc, TIVX_OBJ_DESC_NODE) != 0)
+            if( ownObjDescIsValidType( (tivx_obj_desc_t*)node_obj_desc, TIVX_OBJ_DESC_NODE) != 0) /* TIOVX-1937- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_ON_HOST_CPU_UBR001 */
             {
                 uint64_t timestamp;
                 vx_action action;
@@ -120,23 +120,22 @@ static void ownTargetCmdDescHandlerHost(const tivx_obj_desc_cmd_t *cmd_obj_desc)
 
             data_ref_q = (tivx_data_ref_queue)ownReferenceGetHandleFromObjDescId(cmd_obj_desc->obj_desc_id[0]);
 
-            if( data_ref_q != NULL )
+            if( data_ref_q != NULL ) /* TIOVX-1937- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_ON_HOST_CPU_UBR002 */
             {
                 uint64_t timestamp;
 
                 tivx_uint32_to_uint64(&timestamp, cmd_obj_desc->timestamp_h, cmd_obj_desc->timestamp_l);
 
-                if((vx_status)VX_SUCCESS != ownDataRefQueueSendRefConsumedEvent(data_ref_q, timestamp))
-                {
-                    VX_PRINT(VX_ZONE_ERROR,"Failed to send 'ref consumed event'\n");
-                }
+                (void)ownDataRefQueueSendRefConsumedEvent(data_ref_q, timestamp);
             }
             /* No ack for this command */
         }
             break;
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1746- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_ON_HOST_CPU_UM001 */
         default:
-
             break;
+#endif
     }
 }
 

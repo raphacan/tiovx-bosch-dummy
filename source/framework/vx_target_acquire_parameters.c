@@ -96,11 +96,11 @@ static void ownTargetObjDescSendRefConsumed(
     {
         cmd_obj_desc_id = obj_desc->ref_consumed_cmd_obj_desc_id;
 
-        if((vx_enum)cmd_obj_desc_id != (vx_enum)TIVX_OBJ_DESC_INVALID)
+        if((vx_enum)cmd_obj_desc_id != (vx_enum)TIVX_OBJ_DESC_INVALID) /* TIOVX-1933- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_ACQUIRE_PARAMS_UBR001 */
         {
             tivx_obj_desc_cmd_t *cmd_obj_desc = (tivx_obj_desc_cmd_t *)ownObjDescGet(cmd_obj_desc_id);
 
-            if(0 != ownObjDescIsValidType((tivx_obj_desc_t*)cmd_obj_desc, TIVX_OBJ_DESC_CMD))
+            if(0 != ownObjDescIsValidType((tivx_obj_desc_t*)cmd_obj_desc, TIVX_OBJ_DESC_CMD)) /* TIOVX-1933- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_ACQUIRE_PARAMS_UBR002 */
             {
                 uint64_t timestamp = tivxPlatformGetTimeInUsecs()*1000U;
 
@@ -190,7 +190,7 @@ static void ownTargetNodeDescAcquireParameter(
             }
 
             obj_desc = ownObjDescGet(ref_obj_desc_id);
-            if(obj_desc != NULL)
+            if(obj_desc != NULL) /* TIOVX-1933- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_ACQUIRE_PARAMS_UBR003 */
             {
                 obj_desc->in_node_done_cnt = 0;
             }
@@ -237,8 +237,10 @@ static void ownTargetNodeDescReleaseParameterInDelay(
     {
         next_data_ref_q = (tivx_obj_desc_data_ref_q_t*)ownObjDescGet(cur_data_ref_q->next_obj_desc_id_in_delay);
 
-        if(next_data_ref_q!=NULL)
+        if(next_data_ref_q!=NULL) /* TIOVX-1933- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_ACQUIRE_PARAMS_UBR004 */
         {
+#ifdef HOST_ONLY
+/* TIOVX-1709-Host only Id: TIOVX_CODE_COVERAGE_HOST_ONLY_ACQUIRE_PARAMS_UM001 */
             if(0 != tivxFlagIsBitSet(next_data_ref_q->flags, TIVX_OBJ_DESC_DATA_REF_Q_FLAG_DELAY_SLOT_AUTO_AGE))
             {
                 /* acquire a ref and release it immediately to rotate the ref at this slot */
@@ -253,7 +255,7 @@ static void ownTargetNodeDescReleaseParameterInDelay(
                 {
                     obj_desc_q_id = next_data_ref_q->release_q_obj_desc_id;
 
-                    if((vx_status)VX_SUCCESS == ownObjDescQueueEnqueue(
+                    if((vx_status)VX_SUCCESS == ownObjDescQueueEnqueue( /* TIOVX-1933- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_ACQUIRE_PARAMS_UBR005 */
                         obj_desc_q_id,
                         ref_obj_desc_id
                         ))
@@ -271,13 +273,17 @@ static void ownTargetNodeDescReleaseParameterInDelay(
                         }
                 }
             }
+#endif
             cur_data_ref_q = next_data_ref_q;
         }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1709- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_ACQUIRE_PARAMS_UM001 */
         else
         {
             /* invalid descriptor found */
             break;
         }
+#endif
     }
 }
 
@@ -298,10 +304,14 @@ static void ownTargetNodeDescReleaseParameter(
 
     *is_prm_released = (vx_bool)vx_false_e;
     blocked_nodes.num_nodes = 0;
-    blocked_nodes.node_id[0] = 0;
     do_release_ref = (vx_bool)vx_false_e;
     do_release_ref_to_queue = (vx_bool)vx_false_e;
     obj_desc = ownObjDescGet(ref_obj_desc_id);
+
+    for (node_id = 0; node_id < TIVX_OBJ_DESC_QUEUE_MAX_BLOCKED_NODES; node_id++)
+    {
+        blocked_nodes.node_id[node_id] = 0;
+    }
 
     ownPlatformSystemLock((vx_enum)TIVX_PLATFORM_LOCK_DATA_REF_QUEUE);
 
@@ -349,7 +359,7 @@ static void ownTargetNodeDescReleaseParameter(
         }
     }
     else
-    if( (is_prm_input == (vx_bool)vx_false_e)
+    if( (is_prm_input == (vx_bool)vx_false_e) /* TIOVX-1933- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_ACQUIRE_PARAMS_UBR006 */
         && (data_ref_q_obj_desc->num_in_nodes == 0U) /* i.e this node is not consumed by the graph */
         )
     {
@@ -506,11 +516,12 @@ void ownTargetNodeDescAcquireAllParameters(tivx_obj_desc_node_t *node_obj_desc,
 
 void ownTargetNodeDescReleaseAllParameters(tivx_obj_desc_node_t *node_obj_desc, uint16_t prm_obj_desc_id[])
 {
-    uint32_t is_prm_input_flag, is_prm_data_ref_q_flag, prm_id;
+    uint32_t is_prm_input_flag, is_prm_bidi_flag, is_prm_data_ref_q_flag, prm_id;
     vx_bool is_prm_released, is_prm_input;
 
     is_prm_data_ref_q_flag = node_obj_desc->is_prm_data_ref_q;
     is_prm_input_flag = node_obj_desc->is_prm_input;
+    is_prm_bidi_flag  = node_obj_desc->is_prm_bidi;
 
     for(prm_id=0; prm_id<node_obj_desc->num_params; prm_id++)
     {
@@ -527,7 +538,7 @@ void ownTargetNodeDescReleaseAllParameters(tivx_obj_desc_node_t *node_obj_desc, 
             if(0 != ownObjDescIsValidType((tivx_obj_desc_t*)data_ref_q_obj_desc, TIVX_OBJ_DESC_DATA_REF_Q))
             {
                 bool temp;
-                temp = (bool)tivxFlagIsBitSet(is_prm_input_flag, ((uint32_t)1U<<prm_id)) || (bool)tivxFlagIsBitSet(is_prm_input_flag, ((uint32_t)TIVX_OBJ_DESC_BIDIR_FLAG<<prm_id));
+                temp = (bool)tivxFlagIsBitSet(is_prm_input_flag, ((uint32_t)1U<<prm_id)) || (bool)tivxFlagIsBitSet(is_prm_bidi_flag, ((uint32_t)1U<<prm_id));
                 is_prm_input = (vx_bool)temp;
                 is_prm_released = (vx_bool)vx_false_e;
 

@@ -198,7 +198,7 @@ static vx_status VX_CALLBACK own_ValidatorMetaFromRef(vx_node node, const vx_ref
             return VX_ERROR_INVALID_PARAMETERS;
             break;
         }
-        
+
     }
 
     return VX_SUCCESS;
@@ -1208,6 +1208,8 @@ TEST(tivxRawImage, negativeTestCopyRawImagePatch1)
     addr.stride_x = 0;
     ASSERT_EQ_VX_STATUS(VX_SUCCESS, tivxCopyRawImagePatch(raw_image, &rect, 2, &addr, (void *)&img,
                                                           VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST, TIVX_RAW_IMAGE_PIXEL_BUFFER));
+    ASSERT_EQ_VX_STATUS(VX_SUCCESS, tivxCopyRawImagePatch(raw_image, &rect, 2, &addr, (void *)&img,
+                                                          VX_READ_ONLY, VX_MEMORY_TYPE_HOST, TIVX_RAW_IMAGE_PIXEL_BUFFER));
     addr.stride_x = 3;
     rect.end_x = 16 + 16;
     rect.end_y = 19 + 1;
@@ -1229,6 +1231,14 @@ TEST(tivxRawImage, negativeTestCopyRawImagePatch1)
                                                           VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST, TIVX_RAW_IMAGE_META_AFTER_BUFFER));
     ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_PARAMETERS, tivxCopyRawImagePatch(raw_image1, &rect, 0, &addr, (void *)img,
                                                           VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST, 0));
+
+    addr.dim_x = (vx_uint32)-1;
+    ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_PARAMETERS, tivxCopyRawImagePatch(raw_image, NULL, 0, &addr, (void *)img,
+                                                          VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST, TIVX_RAW_IMAGE_ALLOC_BUFFER));
+    ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_PARAMETERS, tivxCopyRawImagePatch(raw_image1, &rect, 0, &addr, (void *)img,
+                                                          VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST, TIVX_RAW_IMAGE_META_AFTER_BUFFER));
+
+
     VX_CALL(tivxReleaseRawImage(&raw_image));
     VX_CALL(tivxReleaseRawImage(&raw_image1));
     ASSERT(raw_image == 0);
@@ -1293,21 +1303,13 @@ TEST(tivxRawImage, negativeTestCopyRawImagePatch)
 
     VX_CALL(tivxReleaseRawImage(&raw_image));
     VX_CALL(tivxReleaseRawImage(&raw_image1));
-
-    params.width = 1u;
-    params.num_exposures = 0;
-    EXPECT_VX_ERROR(raw_image = tivxCreateRawImage(context, &params), VX_ERROR_INVALID_PARAMETERS);
-    params.width = 3;
-    params.height = 2;
-    params.num_exposures = 2;
-    EXPECT_VX_ERROR(raw_image = tivxCreateRawImage(context, &params), VX_ERROR_INVALID_PARAMETERS);
 }
 
 TEST(tivxRawImage, negativeTestCreateRawImage)
 {
     tivx_raw_image raw_image = NULL;
     tivx_raw_image_create_params_t params;
-    
+
     params.width = 128;
     params.height = 128;
     params.num_exposures = 1;
@@ -1322,6 +1324,95 @@ TEST(tivxRawImage, negativeTestCreateRawImage)
     params.meta_height_after = 0;
 
     ASSERT(raw_image == tivxCreateRawImage(NULL, &params));
+}
+
+TEST(tivxRawImage, negativeTestQueryRawImageBranch)
+{
+    vx_context context = context_->vx_context_;
+    tivx_raw_image raw_image = NULL;
+    tivx_raw_image_create_params_t params;
+    tivx_raw_image_format_t format[4];
+    vx_imagepatch_addressing_t img_addr[4];
+
+    params.width = 128;
+    params.height = 128;
+    params.num_exposures = 3;
+    params.line_interleaved = vx_true_e;
+    params.format[0].pixel_container = TIVX_RAW_IMAGE_16_BIT;
+    params.format[0].msb = 12;
+    params.format[1].pixel_container = TIVX_RAW_IMAGE_8_BIT;
+    params.format[1].msb = 7;
+    params.format[2].pixel_container = TIVX_RAW_IMAGE_P12_BIT;
+    params.format[2].msb = 11;
+    params.meta_height_before = 5;
+    params.meta_height_after = 0;
+
+    ASSERT_VX_OBJECT(raw_image = tivxCreateRawImage(context, &params), (enum vx_type_e)TIVX_TYPE_RAW_IMAGE);
+
+    ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_PARAMETERS, tivxQueryRawImage(raw_image, TIVX_RAW_IMAGE_FORMAT, &format, 0));
+    ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_PARAMETERS, tivxQueryRawImage(raw_image, TIVX_RAW_IMAGE_IMAGEPATCH_ADDRESSING, &img_addr, 0));
+
+    VX_CALL(tivxReleaseRawImage(&raw_image));
+}
+
+TEST(tivxRawImage, negativeTestCopyAndMapCheckParamsBranch)
+{
+    vx_context context = context_->vx_context_;
+    tivx_raw_image raw_image = NULL;
+    vx_map_id map_id;
+    vx_imagepatch_addressing_t user_addr;
+    void **user_ptr;
+    tivx_raw_image_create_params_t params;
+
+    params.width = 128;
+    params.height = 128;
+    params.num_exposures = 3;
+    params.line_interleaved = vx_false_e;
+    params.format[0].pixel_container = TIVX_RAW_IMAGE_16_BIT;
+    params.format[0].msb = 12;
+    params.format[1].pixel_container = TIVX_RAW_IMAGE_8_BIT;
+    params.format[1].msb = 7;
+    params.format[2].pixel_container = TIVX_RAW_IMAGE_P12_BIT;
+    params.format[2].msb = 11;
+    params.meta_height_before = 0;
+    params.meta_height_after = 3;
+
+    ASSERT_VX_OBJECT(raw_image = tivxCreateRawImage(context, &params), (enum vx_type_e)TIVX_TYPE_RAW_IMAGE);
+
+    ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_PARAMETERS, tivxMapRawImagePatch(raw_image, NULL, 0, &map_id, &user_addr, (void **)&user_ptr, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST, TIVX_RAW_IMAGE_META_BEFORE_BUFFER));
+    ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_PARAMETERS, tivxMapRawImagePatch(raw_image, NULL, 0, &map_id, &user_addr, (void **)&user_ptr, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST, TIVX_RAW_IMAGE_META_AFTER_BUFFER + 1));
+
+    VX_CALL(tivxReleaseRawImage(&raw_image));
+}
+
+TEST(tivxRawImage, negativeTestValidCreateParams)
+{
+    vx_context context = context_->vx_context_;
+    tivx_raw_image raw_image = NULL;
+    tivx_raw_image_create_params_t params;
+
+    params.height = 128;
+    params.line_interleaved = vx_false_e;
+    params.format[0].pixel_container = TIVX_RAW_IMAGE_16_BIT;
+    params.format[0].msb = 12;
+    params.format[1].pixel_container = TIVX_RAW_IMAGE_8_BIT;
+    params.format[1].msb = 7;
+    params.format[2].pixel_container = TIVX_RAW_IMAGE_P12_BIT;
+    params.format[2].msb = 11;
+    params.meta_height_before = 5;
+    params.meta_height_after = 0;
+
+    params.width = 1u;
+    params.num_exposures = 0;
+    EXPECT_VX_ERROR(raw_image = tivxCreateRawImage(context, &params), VX_ERROR_INVALID_PARAMETERS);
+
+    params.width = 3;
+    params.height = 2;
+    params.num_exposures = 2;
+    EXPECT_VX_ERROR(raw_image = tivxCreateRawImage(context, &params), VX_ERROR_INVALID_PARAMETERS);
+
+    params.height = 0;
+    EXPECT_VX_ERROR(raw_image = tivxCreateRawImage(context, &params), VX_ERROR_INVALID_PARAMETERS);
 }
 
 TESTCASE_TESTS(
@@ -1341,5 +1432,8 @@ TESTCASE_TESTS(
     testQueryRawImage,
     negativeTestCopyRawImagePatch1,
     negativeTestCopyRawImagePatch,
-    negativeTestCreateRawImage
+    negativeTestCreateRawImage,
+    negativeTestQueryRawImageBranch,
+    negativeTestCopyAndMapCheckParamsBranch,
+    negativeTestValidCreateParams
     )

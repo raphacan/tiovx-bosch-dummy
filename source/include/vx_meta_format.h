@@ -56,6 +56,8 @@ typedef struct _vx_meta_format
         vx_uint32 height;
         /*!< \brief The format of the image. */
         vx_df_image format;
+        /*!< \brief The stride y alignment of the image. */
+        vx_uint32 stride_y_alignment;
     } img;
 
     /*!< \brief structure containing information about pyramid
@@ -87,6 +89,8 @@ typedef struct _vx_meta_format
         vx_enum item_type;
         /*!< \brief The capacity of the Array */
         vx_size capacity;
+        /*!< \brief The item size of the Array */
+        vx_size item_size;
     } arr;
 
     /*!< \brief structure containing information about matrix

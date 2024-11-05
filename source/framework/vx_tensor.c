@@ -52,10 +52,13 @@ static vx_status isTensorSwappable(vx_reference input, vx_reference output)
     {
         tivx_obj_desc_tensor_t * ip_obj_desc = (tivx_obj_desc_tensor_t *)input->obj_desc;
         tivx_obj_desc_tensor_t * op_obj_desc = (tivx_obj_desc_tensor_t *)output->obj_desc;
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1702- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TENSOR_UM002 */
         if (ip_obj_desc->mem_size != op_obj_desc->mem_size)
         {
            status = (vx_status)VX_ERROR_NOT_SUPPORTED;
        }
+#endif       
     }
     else
     {
@@ -83,8 +86,8 @@ static vx_status moveOrSwapTensor(vx_reference input, vx_reference output)
         tivx_obj_desc_t *op_obj_desc = output->obj_desc;
         output->obj_desc = input->obj_desc;
         input->obj_desc  = op_obj_desc;
+        (void)ownReferenceUnlock(output);
     }
-    status = ownReferenceUnlock(output);
     return status;
 }
 
@@ -93,7 +96,7 @@ static vx_status moveOrSwapTensor(vx_reference input, vx_reference output)
  */
 static vx_status VX_CALLBACK tensorKernelCallback(vx_enum kernel_enum, vx_bool validate_only, const vx_reference input, const vx_reference output)
 {
-    vx_status res;
+    vx_status res = (vx_status)VX_ERROR_NOT_SUPPORTED;
     
     switch (kernel_enum)
     {
@@ -125,9 +128,12 @@ static vx_status VX_CALLBACK tensorKernelCallback(vx_enum kernel_enum, vx_bool v
                 res = moveOrSwapTensor(input, output);
             }
             break;
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1702- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TENSOR_UM003 */
         default:
             res =  (vx_status)VX_ERROR_NOT_SUPPORTED;
             break;
+#endif
     }
     return (res);
 }
@@ -316,11 +322,7 @@ VX_API_ENTRY vx_tensor VX_API_CALL vxCreateTensor(
                     (vx_enum)TIVX_OBJ_DESC_TENSOR, vxCastRefFromTensor(tensor));
                 if(tensor->base.obj_desc==NULL)
                 {
-                    status = vxReleaseTensor(&tensor);
-                    if((vx_status)VX_SUCCESS != status)
-                    {
-                        VX_PRINT(VX_ZONE_ERROR,"Failed to release reference to tensor object\n");
-                    }
+                    (void)vxReleaseTensor(&tensor);
 
                     vxAddLogEntry(&context->base, (vx_status)VX_ERROR_NO_RESOURCES,
                         "Could not allocate tensor object descriptor\n");
@@ -713,8 +715,8 @@ VX_API_ENTRY vx_status VX_API_CALL tivxMapTensorPatch(
         if (NULL == view_end)
         {
             for (i = 0; i < number_of_dims; i++)
-            {
-                if (NULL != obj_desc)
+            { 
+                if (NULL != obj_desc) /* TIOVX-1938- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TENSOR_UBR001 */
                 {
                     view_end_map[i] = obj_desc->dimensions[i];
                 }
@@ -753,7 +755,7 @@ VX_API_ENTRY vx_status VX_API_CALL tivxMapTensorPatch(
         map_addr = (vx_uint8*)(uintptr_t)obj_desc->mem_ptr.host_ptr;
         map_size = obj_desc->mem_size;
 
-        if (NULL != map_addr)
+        if (NULL != map_addr) /* TIOVX-1938- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TENSOR_UBR002 */
         {
             uint32_t offset;
 
@@ -802,11 +804,14 @@ VX_API_ENTRY vx_status VX_API_CALL tivxMapTensorPatch(
                 status = (vx_status)VX_ERROR_NO_RESOURCES;
             }
         }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1702- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TENSOR_UM001 */
         else
         {
             VX_PRINT(VX_ZONE_ERROR, "could not allocate memory\n");
             status = (vx_status)VX_ERROR_NO_MEMORY;
         }
+#endif
     }
 
     return status;

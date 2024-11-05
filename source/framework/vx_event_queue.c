@@ -83,14 +83,17 @@ vx_status ownEventQueueCreate(tivx_event_queue_t *event_q)
             /* void added as the status would be success
              * due to previous check at tixQueueCreate
              */
+            VX_PRINT(VX_ZONE_ERROR, "Unable to create queue: READY QUEUE\n");
             (void)tivxQueueDelete(&event_q->free_queue);
         }
+    } else {
+        VX_PRINT(VX_ZONE_ERROR, "Unable to create queue: FREE QUEUE\n");
     }
     if(status!=(vx_status)VX_SUCCESS)
     {
         VX_PRINT(VX_ZONE_ERROR, "Unable to create queues\n");
     }
-    if(status==(vx_status)VX_SUCCESS)
+    else
     {
         uint32_t i;
 
@@ -112,6 +115,7 @@ vx_status ownEventQueueDelete(tivx_event_queue_t *event_q)
 {
     event_q->enable = (vx_bool)vx_false_e;
     vx_status status = (vx_status)VX_SUCCESS;
+    vx_status status1 = (vx_status)VX_SUCCESS;
 
     status = tivxQueueDelete(&event_q->free_queue);
     if(status != (vx_status)VX_SUCCESS)
@@ -119,9 +123,10 @@ vx_status ownEventQueueDelete(tivx_event_queue_t *event_q)
         VX_PRINT(VX_ZONE_ERROR,"Failed to delete free_queue\n");
     }
 
-    status = tivxQueueDelete(&event_q->ready_queue);
-    if(status != (vx_status)VX_SUCCESS)
+    status1 = tivxQueueDelete(&event_q->ready_queue);
+    if(status1 != (vx_status)VX_SUCCESS)
     {
+        status = status1;
         VX_PRINT(VX_ZONE_ERROR,"Failed to delete ready_queue\n");
     }
 
@@ -138,7 +143,8 @@ vx_status ownEventQueueAddEvent(tivx_event_queue_t *event_q,
 {
     vx_status status = (vx_status)VX_FAILURE;
 
-    if((event_q != NULL) && (event_q->enable == (vx_bool)vx_true_e))
+    if((event_q != NULL) &&
+    (event_q->enable == (vx_bool)vx_true_e))
     {
         uintptr_t idx;
 
@@ -158,7 +164,7 @@ vx_status ownEventQueueAddEvent(tivx_event_queue_t *event_q,
 
             status = tivxQueuePut(&event_q->ready_queue, idx, TIVX_EVENT_TIMEOUT_NO_WAIT);
 
-            if ((vx_status)VX_SUCCESS == status)
+            if ((vx_status)VX_SUCCESS == status) /* TIOVX-1887- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_EVENT_QUEUE_UBR003 */
             {
                 ownLogSetResourceUsedValue("TIVX_EVENT_QUEUE_MAX_SIZE", (vx_uint16)idx+1U);
             }
@@ -302,15 +308,18 @@ vx_status vxWaitEventQueue(
                 event->event_info.node_error.status = (vx_status)elem->param3;
             }
             else
-            if(elem->event_id==(vx_enum)VX_EVENT_USER)
+            if(elem->event_id==(vx_enum)VX_EVENT_USER) /* TIOVX-1887- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_EVENT_QUEUE_UBR004 */
             {
                 event->app_value = (uint32_t)elem->param1;
                 event->event_info.user_event.user_event_parameter = (void*)elem->param2;
             }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1722- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_EVENT_QUEUE_UM003 */
             else
             {
                 /* do nothing */
             }
+#endif
         }
 
         /* release index into free queue,
@@ -340,7 +349,7 @@ vx_status ownRegisterEvent(vx_reference ref,
     if (ownIsValidSpecificReference(ref, (vx_enum)VX_TYPE_NODE) == (vx_bool)vx_true_e)
     {
         if( ((vx_enum)event_type==(vx_enum)VX_EVENT_NODE_COMPLETED) ||
-            ((vx_enum)event_type==(vx_enum)VX_EVENT_NODE_ERROR) )
+            ((vx_enum)event_type==(vx_enum)VX_EVENT_NODE_ERROR) ) /* TIOVX-1887- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_EVENT_QUEUE_UBR005 */
         {
             /*status set to NULL due to preceding type check*/
             vx_node node = vxCastRefAsNode(ref, NULL);

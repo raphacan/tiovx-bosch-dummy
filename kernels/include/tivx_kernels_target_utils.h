@@ -218,18 +218,39 @@ void tivxReserveC66xL2MEM(void);
 vx_status tivxKernelsTargetUtilsAssignTargetNameDsp(char *target_name);
 
 /*!
+ * \brief Function to assign C7X target name on J721E
+ *
+ *        This API assigns the target name to the kernel based
+ *        on the SoC
+ * 
+ *        Cores which are assigned per SoC are below:
+ *            J721E:  \ref TIVX_TARGET_DSP_C7_1
+ *            All other SoC's: returns failure
+ *
+ * \ingroup group_tivx_target_utils
+ */
+vx_status tivxKernelsTargetUtilsAssignTargetNameC7x(char *target_name);
+
+/*!
  * \brief Function to assign platform-specific MCU target name
  * 
  *        Cores which are assigned per SoC are below:
  *            J721E:  \ref TIVX_TARGET_MCU2_0 and \ref TIVX_TARGET_MCU2_1
  *            J721S2: \ref TIVX_TARGET_MCU2_0 and \ref TIVX_TARGET_MCU2_1
  *            J784S4: \ref TIVX_TARGET_MCU2_0 and \ref TIVX_TARGET_MCU2_1
- *            J722S:  \ref TIVX_TARGET_MCU2_0
+ *            J722S:  \ref TIVX_TARGET_MCU2_0 and \ref TIVX_TARGET_MCU1_0
  *            AM62A:  \ref TIVX_TARGET_MCU1_0
  *
  * \ingroup group_tivx_target_utils
  */
 vx_status tivxKernelsTargetUtilsAssignTargetNameMcu(char *target_name);
+
+/*!
+ * \brief Function to assign MPU target name (TIVX_TARGET_MPU_0)
+ *
+ * \ingroup group_tivx_target_utils
+ */
+vx_status tivxKernelsTargetUtilsAssignTargetNameMpu(char *target_name);
 
 /*!
  * \ingroup group_tivx_target_utils

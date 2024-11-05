@@ -49,13 +49,27 @@ TEST(tivxUserDataObject, testValidSize)
 
     valid_size = actual_size - 4;
 
-    VX_CALL(tivxSetUserDataObjectAttribute(user_data_object, TIVX_USER_DATA_OBJECT_VALID_SIZE, &valid_size, sizeof(vx_size)));
+    VX_CALL(vxSetUserDataObjectAttribute(user_data_object, VX_USER_DATA_OBJECT_VALID_SIZE, &valid_size, sizeof(vx_size)));
 
-    VX_CALL(vxQueryUserDataObject(user_data_object, TIVX_USER_DATA_OBJECT_VALID_SIZE, &valid_size_query, sizeof(vx_size)));
+    VX_CALL(vxQueryUserDataObject(user_data_object, VX_USER_DATA_OBJECT_VALID_SIZE, &valid_size_query, sizeof(vx_size)));
     ASSERT_EQ_INT(valid_size, valid_size_query);
 
     VX_CALL(vxReleaseUserDataObject(&user_data_object));
     ASSERT(user_data_object == 0);
+}
+
+TEST(tivxUserDataObject, testObjArray)
+{
+    vx_context context = context_->vx_context_;
+    vx_user_data_object user_data_object = 0;
+    vx_object_array objarr;
+
+    ASSERT_VX_OBJECT(user_data_object = vxCreateUserDataObject(context, NULL, sizeof(wb_t), NULL), (enum vx_type_e)VX_TYPE_USER_DATA_OBJECT);
+
+    ASSERT_VX_OBJECT(objarr = vxCreateObjectArray(context, (vx_reference)(user_data_object), 4), VX_TYPE_OBJECT_ARRAY);
+
+    VX_CALL(vxReleaseObjectArray(&objarr));
+    VX_CALL(vxReleaseUserDataObject(&user_data_object));
 }
 
 TEST(tivxUserDataObject, negativeTestCreateUserDataObject)
@@ -86,7 +100,7 @@ TEST(tivxUserDataObject, negativeTestQueryUserDataObject)
     ASSERT_VX_OBJECT(udobj = vxCreateUserDataObject(context, NULL, 5, NULL), VX_TYPE_USER_DATA_OBJECT);
     ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_PARAMETERS, vxQueryUserDataObject(udobj, VX_USER_DATA_OBJECT_NAME, &udata, size));
     ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_PARAMETERS, vxQueryUserDataObject(udobj, VX_USER_DATA_OBJECT_SIZE, &udata, size));
-    ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_PARAMETERS, vxQueryUserDataObject(udobj, TIVX_USER_DATA_OBJECT_VALID_SIZE, &udata, size));
+    ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_PARAMETERS, vxQueryUserDataObject(udobj, VX_USER_DATA_OBJECT_VALID_SIZE, &udata, size));
     ASSERT_EQ_VX_STATUS(VX_ERROR_NOT_SUPPORTED, vxQueryUserDataObject(udobj, attribute, &udata, size));
     ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_PARAMETERS, vxQueryUserDataObject(udobj, VX_USER_DATA_OBJECT_NAME, NULL, size));
     VX_CALL(vxReleaseUserDataObject(&udobj));
@@ -160,16 +174,17 @@ TEST(tivxUserDataObject, negativeTestSetUserDataObjectAttribute)
     vx_size size = 0;
     vx_char tname[] = {'t', 'i', 'o', 'v', 'x'};
 
-    ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_REFERENCE, tivxSetUserDataObjectAttribute(udobj, attribute, &udata, size));
+    ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_REFERENCE, vxSetUserDataObjectAttribute(udobj, attribute, &udata, size));
     ASSERT_VX_OBJECT(udobj = vxCreateUserDataObject(context, tname, sizeof(vx_uint32), &udata), VX_TYPE_USER_DATA_OBJECT);
-    ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_PARAMETERS, tivxSetUserDataObjectAttribute(udobj, TIVX_USER_DATA_OBJECT_VALID_SIZE, &udata, size));
-    ASSERT_EQ_VX_STATUS(VX_ERROR_NOT_SUPPORTED, tivxSetUserDataObjectAttribute(udobj, attribute, &udata, size));
+    ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_PARAMETERS, vxSetUserDataObjectAttribute(udobj, VX_USER_DATA_OBJECT_VALID_SIZE, &udata, size));
+    ASSERT_EQ_VX_STATUS(VX_ERROR_NOT_SUPPORTED, vxSetUserDataObjectAttribute(udobj, attribute, &udata, size));
     VX_CALL(vxReleaseUserDataObject(&udobj));
 }
 
 TESTCASE_TESTS(
     tivxUserDataObject,
     testValidSize,
+    testObjArray,
     negativeTestCreateUserDataObject,
     negativeTestQueryUserDataObject,
     negativeTestCopyUserDataObject,

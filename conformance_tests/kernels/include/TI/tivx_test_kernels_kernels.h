@@ -145,6 +145,11 @@ extern "C" {
  */
 #define TIVX_KERNEL_TEST_TARGET_NAME     "com.ti.test_kernels.test_target"
 
+/*! \brief tiovx_overhead kernel name
+ *  \see group_vision_function_tmp
+ */
+#define TIVX_KERNEL_TIOVX_OVERHEAD_NAME     "com.ti.test_kernels.tiovx_overhead"
+
 /*! End of group_vision_function_test_kernels */
 
 /*!
@@ -191,6 +196,18 @@ void tivxTestKernelsPrintPerformance(vx_perf_t performance, uint32_t numPixels, 
  * \ingroup group_kernel
  */
 void tivxTestKernelsUnSetLoadKernelsFlag(void);
+
+/*!
+ * \brief Function to register TEST_KERNELS Kernels on the Host
+ * \ingroup group_tivx_ext
+ */
+void tivxRegisterTestKernelsKernels(void);
+
+/*!
+ * \brief Function to un-register TEST_KERNELS Kernels on the Host
+ * \ingroup group_tivx_ext
+ */
+void tivxUnRegisterTestKernelsKernels(void);
 
 #ifdef __cplusplus
 }

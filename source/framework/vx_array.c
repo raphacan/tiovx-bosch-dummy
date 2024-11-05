@@ -99,7 +99,7 @@ static vx_status isArrayCopyable(vx_array input, vx_array output)
 /* Call back function that handles the copy, swap and move kernels */
 static vx_status VX_CALLBACK arrayKernelCallback(vx_enum kernel_enum, vx_bool validate_only, const vx_reference input, const vx_reference output)
 {
-    vx_status res;
+    vx_status res = (vx_status)VX_ERROR_NOT_SUPPORTED;
 
     /* do not check the res, as we know they are arrays at that point*/
     switch (kernel_enum)
@@ -132,9 +132,12 @@ static vx_status VX_CALLBACK arrayKernelCallback(vx_enum kernel_enum, vx_bool va
                 res = ownSwapReferenceGeneric(input, output);
             }
             break;
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-2004- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_ARRAY_UM001 */
         default:
             res = (vx_status)VX_ERROR_NOT_SUPPORTED;
             break;
+#endif
     }
     return(res);
 }
@@ -181,14 +184,14 @@ vx_status ownInitVirtualArray(vx_array arr, vx_enum item_type, vx_size capacity)
         if ((ownIsValidArrayItemType(arr->base.context, item_type) ==
                 (vx_bool)vx_true_e) &&
             (capacity > 0U) &&
-            ((vx_enum)(vx_enum)VX_TYPE_INVALID != item_type) &&  /* It should not be invalid now */
+
+            ((vx_enum)(vx_enum)VX_TYPE_INVALID != item_type) &&  /* It should not be invalid now */ /* TIOVX-1875- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_ARRAY_UBR001 */
             ((vx_bool)vx_true_e == arr->base.is_virtual))
         {
             ownInitArrayObject(arr, item_type, capacity, (vx_bool)vx_true_e);
 
             status = (vx_status)VX_SUCCESS;
         }
-#ifdef LDRA_UNTESTABLE_CODE
         else
         {
             VX_PRINT(VX_ZONE_ERROR,"Own init virtual array failed\n");
@@ -208,20 +211,17 @@ vx_status ownInitVirtualArray(vx_array arr, vx_enum item_type, vx_size capacity)
                 VX_PRINT(VX_ZONE_ERROR,"array item type is invalid\n");
             }
 
-            if ((vx_bool)vx_true_e != (arr->base.is_virtual))
+            if ((vx_bool)vx_true_e != (arr->base.is_virtual)) /* TIOVX-1875- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_ARRAY_UBR002 */
             {
                 VX_PRINT(VX_ZONE_ERROR,"array is not virtual\n");
             }
         }
-#endif
     }
-#ifdef LDRA_UNTESTABLE_CODE
     else
     {
         VX_PRINT(VX_ZONE_ERROR,"Own init virtual array failed\n");
         VX_PRINT(VX_ZONE_ERROR,"Reference is invalid or object descriptor is NULL\n");
     }
-#endif
 
     return (status);
 }
@@ -237,7 +237,6 @@ VX_API_ENTRY vx_array VX_API_CALL vxCreateArray(
 {
     vx_array arr = NULL;
     vx_reference ref =NULL;
-    vx_status status = (vx_status)VX_SUCCESS;
 
     if(ownIsValidContext(context) == (vx_bool)vx_true_e)
     {
@@ -262,11 +261,7 @@ VX_API_ENTRY vx_array VX_API_CALL vxCreateArray(
                     (vx_enum)TIVX_OBJ_DESC_ARRAY, vxCastRefFromArray(arr));
                 if(arr->base.obj_desc==NULL)
                 {
-                    status = vxReleaseArray(&arr);
-                    if((vx_status)VX_SUCCESS != status)
-                    {
-                        VX_PRINT(VX_ZONE_ERROR,"Failed to release reference of array object\n");
-                    }
+                    (void)vxReleaseArray(&arr);
 
                     vxAddLogEntry(&context->base, (vx_status)VX_ERROR_NO_RESOURCES,
                         "Could not allocate arr object descriptor\n");
@@ -290,7 +285,6 @@ VX_API_ENTRY vx_array VX_API_CALL vxCreateVirtualArray(
     vx_array arr = NULL;
     vx_reference ref = NULL;
     vx_context context;
-    vx_status status= (vx_status)VX_SUCCESS;
 
     if(ownIsValidSpecificReference(vxCastRefFromGraph(graph), (vx_enum)VX_TYPE_GRAPH) == (vx_bool)vx_true_e)
     {
@@ -317,11 +311,7 @@ VX_API_ENTRY vx_array VX_API_CALL vxCreateVirtualArray(
                 (vx_enum)TIVX_OBJ_DESC_ARRAY, vxCastRefFromArray(arr));
             if(arr->base.obj_desc==NULL)
             {
-                status = vxReleaseArray(&arr);
-                if((vx_status)VX_SUCCESS != status)
-                {
-                    VX_PRINT(VX_ZONE_ERROR,"Failed to release reference of array object\n");
-                }
+                (void)vxReleaseArray(&arr);
 
                 vxAddLogEntry(&context->base, (vx_status)VX_ERROR_NO_RESOURCES,
                     "Could not allocate arr object descriptor\n");
@@ -507,14 +497,12 @@ VX_API_ENTRY vx_status VX_API_CALL vxTruncateArray(vx_array arr, vx_size new_num
     }
     else
     {
-#ifdef LDRA_UNTESTABLE_CODE
         if (obj_desc->capacity == 0U)
         {
             /* Array is still not allocated */
             VX_PRINT(VX_ZONE_ERROR,"Array is still not allocated\n");
             status = (vx_status)VX_ERROR_INVALID_PARAMETERS;
         }
-#endif
 
         if (new_num_items > obj_desc->num_items)
         {
@@ -561,14 +549,12 @@ VX_API_ENTRY vx_status VX_API_CALL vxCopyArrayRange(
             status = (vx_status)VX_ERROR_INVALID_PARAMETERS;
         }
 
-#ifdef LDRA_UNTESTABLE_CODE
         if (obj_desc->capacity == 0U)
         {
             /* Array is still not allocated */
             VX_PRINT(VX_ZONE_ERROR,"Array is still not allocated; capacity is 0\n");
             status = (vx_status)VX_ERROR_INVALID_PARAMETERS;
         }
-#endif
 
         if ((stride < obj_desc->item_size) ||
             (stride == 0U))
@@ -587,7 +573,6 @@ VX_API_ENTRY vx_status VX_API_CALL vxCopyArrayRange(
             status = (vx_status)VX_ERROR_INVALID_PARAMETERS;
         }
 
-#ifdef LDRA_UNTESTABLE_CODE
         if ( (arr->base.is_virtual == (vx_bool)vx_true_e)
             &&
             (arr->base.is_accessible == (vx_bool)vx_false_e)
@@ -597,7 +582,6 @@ VX_API_ENTRY vx_status VX_API_CALL vxCopyArrayRange(
             VX_PRINT(VX_ZONE_ERROR,"Array cannot be accessed by application\n");
             status = (vx_status)VX_ERROR_OPTIMIZED_AWAY;
         }
-#endif
 
         if ((vx_enum)(vx_enum)VX_MEMORY_TYPE_HOST != user_mem_type)
         {
@@ -674,7 +658,6 @@ VX_API_ENTRY vx_status VX_API_CALL vxMapArrayRange(
     }
     else
     {
-#ifdef LDRA_UNTESTABLE_CODE
         if ( (arr->base.is_virtual == (vx_bool)vx_true_e)
             &&
             (arr->base.is_accessible == (vx_bool)vx_false_e)
@@ -684,7 +667,6 @@ VX_API_ENTRY vx_status VX_API_CALL vxMapArrayRange(
             VX_PRINT(VX_ZONE_ERROR,"Array cannot be accessed by application\n");
             status = (vx_status)VX_ERROR_OPTIMIZED_AWAY;
         }
-#endif
 
         /* Not of condition */
         if (!((range_end > range_start) &&
@@ -764,7 +746,6 @@ VX_API_ENTRY vx_status VX_API_CALL vxUnmapArrayRange(vx_array arr, vx_map_id map
     }
     else
     {
-#ifdef LDRA_UNTESTABLE_CODE
         if ( (arr->base.is_virtual == (vx_bool)vx_true_e)
             &&
             (arr->base.is_accessible == (vx_bool)vx_false_e)
@@ -774,7 +755,6 @@ VX_API_ENTRY vx_status VX_API_CALL vxUnmapArrayRange(vx_array arr, vx_map_id map
             VX_PRINT(VX_ZONE_ERROR,"Array cannot be accessed by application\n");
             status = (vx_status)VX_ERROR_OPTIMIZED_AWAY;
         }
-#endif
 
         if ((map_id >= TIVX_ARRAY_MAX_MAPS) ||
             (arr->maps[map_id].map_addr == NULL) ||

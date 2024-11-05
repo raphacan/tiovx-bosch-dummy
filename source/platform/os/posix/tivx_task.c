@@ -92,7 +92,8 @@ static void *tivxTaskMain(void *arg)
 {
     tivx_task *task = (tivx_task*)arg;
 
-    if( task && task->task_func)
+    if( task /* TIOVX-1952- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TASK_UBR001 */
+    && task->task_func) /* TIOVX-1952- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TASK_UBR002 */
     {
         task->task_func(task->app_var);
     }
@@ -104,7 +105,7 @@ vx_status tivxTaskCreate(tivx_task *task, const tivx_task_create_params_t *param
 {
     vx_status status = (vx_status)VX_SUCCESS;
 
-    if ((NULL != task) && (NULL != params))
+    if ((NULL != task) && (NULL != params) && (NULL != params->task_main))
     {
         tivx_task_context context;
 
@@ -129,7 +130,7 @@ vx_status tivxTaskCreate(tivx_task *task, const tivx_task_create_params_t *param
 
             status = pthread_attr_init(&thread_attr);
 
-            if(status==0)
+            if(status==0) /* TIOVX-1952- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TASK_UBR003 */
             {
                 #if 0
                 {
@@ -158,16 +159,18 @@ vx_status tivxTaskCreate(tivx_task *task, const tivx_task_create_params_t *param
                 }
                 #endif
 
-                if(status==0)
+                if(status==0) /* TIOVX-1952- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TASK_UBR004 */
                 {
                     status = pthread_create(&context->hndl, &thread_attr, tivxTaskMain, task);
                 }
                 (void)pthread_attr_destroy(&thread_attr);
             }
-            if (status == 0)
+            if (status == 0) /* TIOVX-1952- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TASK_UBR005 */
             {
                 task->tsk_handle = (void *)context;
             }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1724- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TASK_UM001 */
             else
             {
                 status = ownPosixObjectFree((uint8_t*)context, (vx_enum)TIVX_POSIX_TYPE_TASK);
@@ -176,6 +179,7 @@ vx_status tivxTaskCreate(tivx_task *task, const tivx_task_create_params_t *param
                     VX_PRINT(VX_ZONE_ERROR, "Task free failed\n");
                 }
             }
+#endif
         }
     }
     else
@@ -202,12 +206,20 @@ vx_status tivxTaskDelete(tivx_task *task)
         (void)pthread_join(context->hndl, &ret_val);
 
         status = ownPosixObjectFree((uint8_t*)context, (vx_enum)TIVX_POSIX_TYPE_TASK);
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1724- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TASK_UM002 */
         if ((vx_status)VX_SUCCESS != status)
         {
             VX_PRINT(VX_ZONE_ERROR, "Task free failed\n");
         }
+#endif
 
         task->tsk_handle = NULL;
+    }
+    else
+    {
+        VX_PRINT(VX_ZONE_ERROR, "Task or task handle are NULL\n");
+        status = (vx_status)VX_FAILURE;
     }
 
     return (status);
@@ -215,16 +227,21 @@ vx_status tivxTaskDelete(tivx_task *task)
 
 void tivxTaskWaitMsecs(uint32_t msec)
 {
-#if _POSIX_C_SOURCE >= 199309L
+#if defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 199309L)
     struct timespec delay_time = {0}, remain_time = {0};
     int ret;
 
     delay_time.tv_sec  = (int64_t)msec/1000;
     delay_time.tv_nsec = ((int64_t)msec%1000)*1000000;
 
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1724- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TASK_UM003 */
     do
     {
+#endif
         ret = nanosleep(&delay_time, &remain_time);
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1724- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TASK_UM003 */
         if((ret < 0) && (remain_time.tv_sec > 0) && (remain_time.tv_nsec > 0))
         {
             /* restart for remaining time */
@@ -235,8 +252,9 @@ void tivxTaskWaitMsecs(uint32_t msec)
             break;
         }
     } while(true);
+#endif
 #else
-    usleep(msec * 1000);
+    (void)usleep(msec * 1000U);
 #endif
 }
 

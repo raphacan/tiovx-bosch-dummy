@@ -61,41 +61,49 @@
  */
 
 #include "TI/tivx.h"
-#include "TI/tivx_test_kernels.h"
+#include "TI/tivx_capture.h"
 #include "VX/vx.h"
-#include "tivx_test_kernels_kernels.h"
-#include "tivx_kernel_not_not.h"
+#include "tivx_capture_kernels.h"
+#include "tivx_kernel_pyramid_sink.h"
 #include "TI/tivx_target_kernel.h"
+#include <TI/tivx_task.h>
 #include "tivx_kernels_target_utils.h"
-#include "ti/vxlib/vxlib.h"
+#include "TI/tivx_test_kernels.h"
 
-static tivx_target_kernel vx_not_not_target_kernel = NULL;
+typedef struct
+{
+    uint8_t local_val;
+    uint8_t do_error_print;
+} tivxPyramidSinkParams;
 
-static vx_status VX_CALLBACK tivxNotNotProcess(
+static tivx_target_kernel vx_pyramid_sink_target_kernel = NULL;
+
+static vx_status VX_CALLBACK tivxPyramidSinkProcess(
        tivx_target_kernel_instance kernel,
        tivx_obj_desc_t *obj_desc[],
        uint16_t num_params, void *priv_arg);
-static vx_status VX_CALLBACK tivxNotNotCreate(
+static vx_status VX_CALLBACK tivxPyramidSinkCreate(
        tivx_target_kernel_instance kernel,
        tivx_obj_desc_t *obj_desc[],
        uint16_t num_params, void *priv_arg);
-static vx_status VX_CALLBACK tivxNotNotDelete(
+static vx_status VX_CALLBACK tivxPyramidSinkDelete(
        tivx_target_kernel_instance kernel,
        tivx_obj_desc_t *obj_desc[],
        uint16_t num_params, void *priv_arg);
 
-static vx_status VX_CALLBACK tivxNotNotProcess(
+static vx_status VX_CALLBACK tivxPyramidSinkProcess(
        tivx_target_kernel_instance kernel,
        tivx_obj_desc_t *obj_desc[],
        uint16_t num_params, void *priv_arg)
 {
     vx_status status = VX_SUCCESS;
-    tivx_obj_desc_image_t *input_desc;
-    tivx_obj_desc_image_t *output_desc;
+    #if 0
+    tivx_obj_desc_pyramid_t *in_desc;
+    tivxPyramidSinkParams *prms = NULL;
+    uint32_t size;
 
-    if ( (num_params != TIVX_KERNEL_NOT_NOT_MAX_PARAMS)
-        || (NULL == obj_desc[TIVX_KERNEL_NOT_NOT_INPUT_IDX])
-        || (NULL == obj_desc[TIVX_KERNEL_NOT_NOT_OUTPUT_IDX])
+    if ( (num_params != TIVX_KERNEL_PYRAMID_SINK_MAX_PARAMS)
+        || (NULL == obj_desc[TIVX_KERNEL_PYRAMID_SINK_INPUT_IDX])
     )
     {
         status = VX_FAILURE;
@@ -103,111 +111,108 @@ static vx_status VX_CALLBACK tivxNotNotProcess(
 
     if(VX_SUCCESS == status)
     {
-        input_desc = (tivx_obj_desc_image_t *)obj_desc[TIVX_KERNEL_NOT_NOT_INPUT_IDX];
-        output_desc = (tivx_obj_desc_image_t *)obj_desc[TIVX_KERNEL_NOT_NOT_OUTPUT_IDX];
+        in_desc = (tivx_obj_desc_pyramid_t *)obj_desc[TIVX_KERNEL_PYRAMID_SINK_INPUT_IDX];
 
     }
 
     if(VX_SUCCESS == status)
     {
+        vx_uint8 in_value;
 
-        void *input_target_ptr;
-        void *output_target_ptr;
+        tivxTaskWaitMsecs(1);
 
-        input_target_ptr = tivxMemShared2TargetPtr(&input_desc->mem_ptr[0]);
-        tivxCheckStatus(&status, tivxMemBufferMap(input_target_ptr,
-           input_desc->mem_size[0], VX_MEMORY_TYPE_HOST,
-           VX_READ_ONLY));
+        in_value = in_desc->data.u08;
 
-        output_target_ptr = tivxMemShared2TargetPtr(&output_desc->mem_ptr[0]);
-        tivxCheckStatus(&status, tivxMemBufferMap(output_target_ptr,
-           output_desc->mem_size[0], VX_MEMORY_TYPE_HOST,
-           VX_WRITE_ONLY));
+        status = tivxGetTargetKernelInstanceContext(kernel,
+            (void **)&prms, &size);
 
-
-
+        if (255 == prms->local_val)
         {
-            VXLIB_bufParams2D_t vxlib_input;
-            uint8_t *input_addr = NULL;
-            VXLIB_bufParams2D_t vxlib_output;
-            uint8_t *output_addr = NULL;
-
-            tivxInitBufParams(input_desc, &vxlib_input);
-            tivxSetPointerLocation(input_desc, &input_target_ptr, &input_addr);
-
-            tivxInitBufParams(output_desc, &vxlib_output);
-            tivxSetPointerLocation(output_desc, &output_target_ptr, &output_addr);
-
-            status = VXLIB_not_i8u_o8u(input_target_ptr, &vxlib_input, output_target_ptr, &vxlib_output);
-            status = VXLIB_not_i8u_o8u(output_target_ptr, &vxlib_output, output_target_ptr, &vxlib_output);
-
+            prms->local_val = 0;
         }
-        tivxCheckStatus(&status, tivxMemBufferUnmap(input_target_ptr,
-           input_desc->mem_size[0], VX_MEMORY_TYPE_HOST,
-            VX_READ_ONLY));
-
-        tivxCheckStatus(&status, tivxMemBufferUnmap(output_target_ptr,
-           output_desc->mem_size[0], VX_MEMORY_TYPE_HOST,
-            VX_WRITE_ONLY));
+        else
+        {
+            prms->local_val++;
+        }
 
 
-
+        if (prms->local_val != in_value && prms->do_error_print)
+        {
+            if(prms->do_error_print>0)
+                prms->do_error_print--;
+            VX_PRINT(VX_ZONE_ERROR, "error #%d, %d != %d !!!\n", prms->do_error_print, prms->local_val, in_value);
+            status = VX_FAILURE;
+        }
     }
+    #endif
 
     return status;
 }
 
-static vx_status VX_CALLBACK tivxNotNotCreate(
+static vx_status VX_CALLBACK tivxPyramidSinkCreate(
        tivx_target_kernel_instance kernel,
        tivx_obj_desc_t *obj_desc[],
        uint16_t num_params, void *priv_arg)
 {
     vx_status status = VX_SUCCESS;
+    tivxPyramidSinkParams *prms = NULL;
 
-    /* < DEVELOPER_TODO: (Optional) Add any target kernel create code here (e.g. allocating */
-    /*                   local memory buffers, one time initialization, etc) > */
+    prms = tivxMemAlloc(sizeof(tivxPyramidSinkParams), TIVX_MEM_EXTERNAL);
+
+    tivxSetTargetKernelInstanceContext(kernel, prms,
+       sizeof(tivxPyramidSinkParams));
+
+    prms->local_val = 0;
+    prms->do_error_print = 10; /* max number of times to do error print */
 
     return status;
 }
 
-static vx_status VX_CALLBACK tivxNotNotDelete(
+static vx_status VX_CALLBACK tivxPyramidSinkDelete(
        tivx_target_kernel_instance kernel,
        tivx_obj_desc_t *obj_desc[],
        uint16_t num_params, void *priv_arg)
 {
     vx_status status = VX_SUCCESS;
-    /* < DEVELOPER_TODO: (Optional) Add any target kernel delete code here (e.g. freeing */
-    /*                   local memory buffers, etc) > */
+    tivxPyramidSinkParams *prms = NULL;
+    uint32_t size;
+
+    status = tivxGetTargetKernelInstanceContext(kernel,
+        (void **)&prms, &size);
+
+    tivxMemFree(prms, sizeof(tivxPyramidSinkParams), TIVX_MEM_EXTERNAL);
 
     return status;
 }
 
-
-void tivxAddTargetKernelNotNot(void)
+void tivxAddTargetKernelPyramidSink(void)
 {
     char target_name[TIVX_TARGET_MAX_NAME];
 
-    if( (vx_status)VX_SUCCESS == tivxKernelsTargetUtilsAssignTargetNameDsp(target_name))
+    if( ((vx_status)VX_SUCCESS == tivxKernelsTargetUtilsAssignTargetNameMcu(target_name)) ||
+        ((vx_status)VX_SUCCESS == tivxKernelsTargetUtilsAssignTargetNameDsp(target_name)) ||
+        ((vx_status)VX_SUCCESS == tivxKernelsTargetUtilsAssignTargetNameMpu(target_name)) ||
+        ((vx_status)VX_SUCCESS == tivxKernelsTargetUtilsAssignTargetNameC7x(target_name)))
     {
-        vx_not_not_target_kernel = tivxAddTargetKernelByName(
-                            TIVX_KERNEL_NOT_NOT_NAME,
+        vx_pyramid_sink_target_kernel = tivxAddTargetKernelByName(
+                            TIVX_KERNEL_PYRAMID_SINK_NAME,
                             target_name,
-                            tivxNotNotProcess,
-                            tivxNotNotCreate,
-                            tivxNotNotDelete,
+                            tivxPyramidSinkProcess,
+                            tivxPyramidSinkCreate,
+                            tivxPyramidSinkDelete,
                             NULL,
                             NULL);
     }
 }
 
-void tivxRemoveTargetKernelNotNot(void)
+void tivxRemoveTargetKernelPyramidSink(void)
 {
     vx_status status = VX_SUCCESS;
 
-    status = tivxRemoveTargetKernel(vx_not_not_target_kernel);
+    status = tivxRemoveTargetKernel(vx_pyramid_sink_target_kernel);
     if (status == VX_SUCCESS)
     {
-        vx_not_not_target_kernel = NULL;
+        vx_pyramid_sink_target_kernel = NULL;
     }
 }
 

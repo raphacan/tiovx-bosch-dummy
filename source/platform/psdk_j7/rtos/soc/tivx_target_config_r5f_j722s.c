@@ -27,8 +27,13 @@ void ownPlatformCreateTargets(void)
     tivxPlatformCreateTargetId((vx_enum)TIVX_TARGET_ID_CSITX2,    12u, "TIVX_CSITX2", 8u);
     tivxPlatformCreateTargetId((vx_enum)TIVX_TARGET_ID_DMPAC_SDE, 13u, "TIVX_SDE",    8u);
     tivxPlatformCreateTargetId((vx_enum)TIVX_TARGET_ID_DMPAC_DOF, 14u, "TIVX_DOF",    8u);
+
+    /* MCU1-0 Targets */
+    tivxPlatformCreateTargetId((vx_enum)TIVX_TARGET_ID_MCU1_0, 0u, "TIVX_MCU1_0", 4u);
 }
 
+/*LDRA_NOANALYSIS*/
+/* TIOVX-1769- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_CONFIG_R5F_UM001 */
 void ownPlatformDeleteTargets(void)
 {
     tivxPlatformDeleteTargetId((vx_enum)TIVX_TARGET_ID_MCU2_0);
@@ -46,4 +51,8 @@ void ownPlatformDeleteTargets(void)
     tivxPlatformDeleteTargetId((vx_enum)TIVX_TARGET_ID_CSITX2);
     tivxPlatformDeleteTargetId((vx_enum)TIVX_TARGET_ID_DMPAC_SDE);
     tivxPlatformDeleteTargetId((vx_enum)TIVX_TARGET_ID_DMPAC_DOF);
+
+    /* MCU1-0 targets */
+    tivxPlatformDeleteTargetId((vx_enum)TIVX_TARGET_ID_MCU1_0);
 }
+/*LDRA_ANALYSIS*/

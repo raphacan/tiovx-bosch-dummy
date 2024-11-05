@@ -605,10 +605,24 @@ TEST (copySwap, testCopy)
     }
 
     /* improve test coverage */
-    /* negative test cases for vx_array */
     vx_node node;
-    vx_array example1, example2;
+    vx_array example1;
+    vx_matrix vxmatrix1;
+    /* negative test case for different input and output types */
+    /* arrays and matrixes */
+    graph = vxCreateGraph(context);
+    example1 = vxCreateArray(context, VX_TYPE_UINT8, 4);
+    vxmatrix1 = vxCreateMatrix(context, VX_TYPE_UINT8, 4, 4);
+    node = vxCopyNode(graph, (vx_reference)example1, (vx_reference)vxmatrix1);
+    EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxGetStatus((vx_reference)node));
+    EXPECT_EQ_VX_STATUS(VX_ERROR_NOT_COMPATIBLE, vxVerifyGraph(graph));
+    VX_CALL(vxReleaseArray(&example1));
+    VX_CALL(vxReleaseMatrix(&vxmatrix1));
+    VX_CALL(vxReleaseNode(&node));
+    VX_CALL(vxReleaseGraph(&graph));
+    /* negative test cases for vx_array */
     /* arrays of different sizes */
+    vx_array example2;
     graph = vxCreateGraph(context);
     example1 = vxCreateArray(context, VX_TYPE_UINT8, 4);
     example2 = vxCreateArray(context, VX_TYPE_UINT8, 3);
@@ -618,6 +632,22 @@ TEST (copySwap, testCopy)
     VX_CALL(vxReleaseArray(&example1));
     VX_CALL(vxReleaseArray(&example2));
     VX_CALL(vxReleaseNode(&node));
+    VX_CALL(vxReleaseGraph(&graph));
+    /* arrays virtual and size 0*/
+    graph = vxCreateGraph(context);
+    example1 = vxCreateArray(context, VX_TYPE_UINT8, 3);
+    example2 = vxCreateVirtualArray(graph, VX_TYPE_UINT8, 0);
+    vx_array example3 = vxCreateArray(context, VX_TYPE_UINT8, 3);
+    node = vxCopyNode(graph, (vx_reference)example1, (vx_reference)example2);
+    EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxGetStatus((vx_reference)node));
+    vx_node node_1 = vxCopyNode(graph, (vx_reference)example2, (vx_reference)example3);
+    EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxGetStatus((vx_reference)node_1));
+    EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxVerifyGraph(graph));
+    VX_CALL(vxReleaseNode(&node));
+    VX_CALL(vxReleaseNode(&node_1));
+    VX_CALL(vxReleaseArray(&example1));
+    VX_CALL(vxReleaseArray(&example2));
+    VX_CALL(vxReleaseArray(&example3));
     VX_CALL(vxReleaseGraph(&graph));
     //array of different types
     graph = vxCreateGraph(context);
@@ -665,7 +695,7 @@ TEST (copySwap, testCopy)
     VX_CALL(vxReleaseGraph(&graph));
 
     /* improve test coverage */
-    /* negative test cases for vx_objarray */
+    /* vx_objarray : negative test cases */
     graph = vxCreateGraph(context);
     vx_object_array objarray_0, objarray_1;
     vx_image image = vxCreateImage(context, 16, 16, VX_DF_IMAGE_U8);
@@ -680,11 +710,92 @@ TEST (copySwap, testCopy)
     VX_CALL(vxReleaseNode(&node));
     VX_CALL(vxReleaseGraph(&graph));
 
+
     /* improve test coverage */
-    /* negative test cases for vx_pyramid */
+    vx_image image_0, image_1;
+    /* vx_image : negative test cases */
+    /* different sizes and virtual image */
+    /* width */
+    graph = vxCreateGraph(context);
+    image_0 = vxCreateImage(context, 16, 16, VX_DF_IMAGE_U8);
+    image_1 = vxCreateVirtualImage(graph, 15, 16, VX_DF_IMAGE_U8);
+    node = vxCopyNode(graph, (vx_reference)image_0, (vx_reference)image_1);
+    EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxGetStatus((vx_reference)node));
+    EXPECT_EQ_VX_STATUS(VX_ERROR_NOT_COMPATIBLE, vxVerifyGraph(graph));
+    VX_CALL(vxReleaseImage(&image_0));
+    VX_CALL(vxReleaseImage(&image_1));
+    VX_CALL(vxReleaseNode(&node));
+    VX_CALL(vxReleaseGraph(&graph));
+    /* height */
+    graph = vxCreateGraph(context);
+    image_0 = vxCreateImage(context, 16, 16, VX_DF_IMAGE_U8);
+    image_1 = vxCreateImage(context, 16, 15, VX_DF_IMAGE_U8);
+    node = vxCopyNode(graph, (vx_reference)image_0, (vx_reference)image_1);
+    EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxGetStatus((vx_reference)node));
+    EXPECT_EQ_VX_STATUS(VX_ERROR_NOT_COMPATIBLE, vxVerifyGraph(graph));
+    VX_CALL(vxReleaseImage(&image_0));
+    VX_CALL(vxReleaseImage(&image_1));
+    VX_CALL(vxReleaseNode(&node));
+    VX_CALL(vxReleaseGraph(&graph));
+    graph = vxCreateGraph(context);
+    image_0 = vxCreateImage(context, 16, 16, VX_DF_IMAGE_U8);
+    image_1 = vxCreateVirtualImage(graph, 16, 1, VX_DF_IMAGE_U8);
+    node = vxCopyNode(graph, (vx_reference)image_0, (vx_reference)image_1);
+    EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxGetStatus((vx_reference)node));
+    EXPECT_EQ_VX_STATUS(VX_ERROR_NOT_COMPATIBLE, vxVerifyGraph(graph));
+    VX_CALL(vxReleaseImage(&image_0));
+    VX_CALL(vxReleaseImage(&image_1));
+    VX_CALL(vxReleaseNode(&node));
+    VX_CALL(vxReleaseGraph(&graph));
+    graph = vxCreateGraph(context);
+    image_0 = vxCreateImage(context, 16, 16, VX_DF_IMAGE_U8);
+    image_1 = vxCreateVirtualImage(graph, 16, 0, VX_DF_IMAGE_U8);
+    node = vxCopyNode(graph, (vx_reference)image_0, (vx_reference)image_1);
+    EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxGetStatus((vx_reference)node));
+    EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxVerifyGraph(graph));
+    VX_CALL(vxReleaseImage(&image_0));
+    VX_CALL(vxReleaseImage(&image_1));
+    VX_CALL(vxReleaseNode(&node));
+    VX_CALL(vxReleaseGraph(&graph));
+    /* formats */
+    graph = vxCreateGraph(context);
+    image_0 = vxCreateImage(context, 16, 16, VX_DF_IMAGE_U8);
+    image_1 = vxCreateVirtualImage(graph, 16, 16, VX_DF_IMAGE_U16);
+    node = vxCopyNode(graph, (vx_reference)image_0, (vx_reference)image_1);
+    EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxGetStatus((vx_reference)node));
+    EXPECT_EQ_VX_STATUS(VX_ERROR_NOT_COMPATIBLE, vxVerifyGraph(graph));
+    VX_CALL(vxReleaseImage(&image_0));
+    VX_CALL(vxReleaseImage(&image_1));
+    VX_CALL(vxReleaseNode(&node));
+    VX_CALL(vxReleaseGraph(&graph));
+    graph = vxCreateGraph(context);
+    image_0 = vxCreateImage(context, 16, 16, VX_DF_IMAGE_U8);
+    image_1 = vxCreateVirtualImage(graph, 16, 16, VX_DF_IMAGE_VIRT);
+    node = vxCopyNode(graph, (vx_reference)image_0, (vx_reference)image_1);
+    EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxGetStatus((vx_reference)node));
+    EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxVerifyGraph(graph));
+    VX_CALL(vxReleaseImage(&image_0));
+    VX_CALL(vxReleaseImage(&image_1));
+    VX_CALL(vxReleaseNode(&node));
+    VX_CALL(vxReleaseGraph(&graph));
+
+    /* size 0 */
+    graph = vxCreateGraph(context);
+    image_0 = vxCreateImage(context, 16, 16, VX_DF_IMAGE_U8);
+    image_1 = vxCreateVirtualImage(graph, 0, 16, VX_DF_IMAGE_U8);
+    node = vxCopyNode(graph, (vx_reference)image_0, (vx_reference)image_1);
+    EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxGetStatus((vx_reference)node));
+    EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxVerifyGraph(graph));
+    VX_CALL(vxReleaseImage(&image_0));    
+    VX_CALL(vxReleaseImage(&image_1));
+    VX_CALL(vxReleaseNode(&node));
+    VX_CALL(vxReleaseGraph(&graph));
+
+    /* improve test coverage for pyramids */
+    vx_pyramid pyramid_0, pyramid_1, pyramid_2;    
+    /* vx_pyramid : negative test cases */
     /* same object for intput and ouput */
     graph = vxCreateGraph(context);
-    vx_pyramid pyramid_0, pyramid_1;
     pyramid_0 = vxCreatePyramid(context, 4, VX_SCALE_PYRAMID_HALF, 16, 16, VX_DF_IMAGE_U8);
     node = vxCopyNode(graph, (vx_reference)pyramid_0, (vx_reference)pyramid_0);
     EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxGetStatus((vx_reference)node));
@@ -692,7 +803,7 @@ TEST (copySwap, testCopy)
     VX_CALL(vxReleasePyramid(&pyramid_0));
     VX_CALL(vxReleaseNode(&node));
     VX_CALL(vxReleaseGraph(&graph));
-    /* different lods */
+    /* different lods */    
     graph = vxCreateGraph(context);
     pyramid_0 = vxCreatePyramid(context, 4, VX_SCALE_PYRAMID_HALF, 16, 16, VX_DF_IMAGE_U8);
     pyramid_1 = vxCreatePyramid(context, 2, VX_SCALE_PYRAMID_HALF, 16, 16, VX_DF_IMAGE_U8);
@@ -725,7 +836,6 @@ TEST (copySwap, testCopy)
     VX_CALL(vxReleasePyramid(&pyramid_1));
     VX_CALL(vxReleaseNode(&node));
     VX_CALL(vxReleaseGraph(&graph));
-
     /* positive and negative tests but with output virtual object */
     /* with width */
     graph = vxCreateGraph(context);
@@ -769,7 +879,6 @@ TEST (copySwap, testCopy)
     VX_CALL(vxReleasePyramid(&pyramid_1));
     VX_CALL(vxReleaseNode(&node));
     VX_CALL(vxReleaseGraph(&graph));
-    
     /* positive and negative tests with formats and virtual object*/
     graph = vxCreateGraph(context);
     pyramid_0 = vxCreatePyramid(context, 4, VX_SCALE_PYRAMID_HALF, 16, 2, VX_DF_IMAGE_U8);
@@ -781,8 +890,7 @@ TEST (copySwap, testCopy)
     VX_CALL(vxReleasePyramid(&pyramid_1));
     VX_CALL(vxReleaseNode(&node));
     VX_CALL(vxReleaseGraph(&graph));
-
-    /* with virtual image format positive and negative tests*/
+    /* with virtual pyramid image format positive and negative tests*/
     graph = vxCreateGraph(context);
     pyramid_0 = vxCreatePyramid(context, 4, VX_SCALE_PYRAMID_HALF, 16, 16, VX_DF_IMAGE_U8);
     pyramid_1 = vxCreateVirtualPyramid(graph, 4, VX_SCALE_PYRAMID_HALF, 16, 16, VX_DF_IMAGE_VIRT);
@@ -802,6 +910,18 @@ TEST (copySwap, testCopy)
     EXPECT_EQ_VX_STATUS(VX_ERROR_NOT_COMPATIBLE, vxVerifyGraph(graph));
     VX_CALL(vxReleasePyramid(&pyramid_0));
     VX_CALL(vxReleasePyramid(&pyramid_1));
+    VX_CALL(vxReleaseNode(&node));
+    VX_CALL(vxReleaseGraph(&graph));
+
+    /* different objects type*/
+    graph = vxCreateGraph(context);
+    vx_image img = vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8);
+    pyramid_0 = vxCreateVirtualPyramid(graph, 4, VX_SCALE_PYRAMID_HALF, 16, 2, VX_DF_IMAGE_U16);
+    node = vxCopyNode(graph, (vx_reference)pyramid_0, (vx_reference)img);
+    EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxGetStatus((vx_reference)node));
+    EXPECT_EQ_VX_STATUS(VX_ERROR_NOT_COMPATIBLE, vxVerifyGraph(graph));
+    VX_CALL(vxReleaseImage(&img));
+    VX_CALL(vxReleasePyramid(&pyramid_0));
     VX_CALL(vxReleaseNode(&node));
     VX_CALL(vxReleaseGraph(&graph));
 }
@@ -847,7 +967,6 @@ TEST (copySwap, testSwap)
             VX_CALL(vxReleaseGraph(&graph));
         }
     }
-
 }
 
 
@@ -1005,6 +1124,8 @@ TEST(copySwap, testVxu)
     EXPECT_NE_VX_STATUS(VX_SUCCESS, vxuCopy(context, (vx_reference)uni1, (vx_reference)uni2));
     /* Cannot swap uniform images */
     EXPECT_NE_VX_STATUS(VX_SUCCESS, vxuSwap(context, (vx_reference)uni1, (vx_reference)uni2));
+    /* other direction from uniform into one normal image */
+    EXPECT_NE_VX_STATUS(VX_SUCCESS, vxuSwap(context, (vx_reference)uni1, (vx_reference)example1));
     /* Cannot move uniform images */
     EXPECT_NE_VX_STATUS(VX_SUCCESS, vxuMove(context, (vx_reference)uni1, (vx_reference)uni2));
 
@@ -1013,6 +1134,34 @@ TEST(copySwap, testVxu)
     VX_CALL(vxReleaseReference(&example1));
     VX_CALL(vxReleaseReference(&example2));
 
+    /* negative testing for scalar */
+    vx_uint32 value = 0;
+    example1 = (vx_reference)vxCreateScalar(context, VX_TYPE_UINT32, &value);
+    example2 = (vx_reference)vxCreateScalar(context, VX_TYPE_UINT16, &value);
+    EXPECT_EQ_VX_STATUS(VX_ERROR_NOT_COMPATIBLE, vxuCopy(context, example1, example2));
+    VX_CALL(vxReleaseReference(&example1));
+    VX_CALL(vxReleaseReference(&example2));
+
+    /* negative test for tensor */
+    vx_size dims1[3] = {4, 4, 4};
+    example1 = (vx_reference)vxCreateTensor(context, 3, dims1, VX_TYPE_INT32, 0);
+    example2 = (vx_reference)vxCreateTensor(context, 3, dims1, VX_TYPE_INT16, 0);
+    EXPECT_NE_VX_STATUS(VX_SUCCESS, vxuSwap(context, example1, example2));
+    EXPECT_NE_VX_STATUS(VX_SUCCESS, vxuCopy(context, example1, example2));
+    VX_CALL(vxReleaseReference(&example1));
+    VX_CALL(vxReleaseReference(&example2));
+
+    /* negative tests for pyramid that cannot be reached with a graph */
+    /* same object in and out */
+    example1 = (vx_reference)vxCreatePyramid(context, 4, VX_SCALE_PYRAMID_HALF, 16, 2, VX_DF_IMAGE_U16);
+    EXPECT_EQ_VX_STATUS(VX_ERROR_NOT_COMPATIBLE, vxuCopy(context, example1, example1));
+    VX_CALL(vxReleaseReference(&example1));
+    /* copy of different generic objects type who are tested with the tivxIsReferenceMetaFormatEqual*/
+    example1 = (vx_reference)vxCreateLUT(context, VX_TYPE_UINT8, 4);
+    example2 = (vx_reference)vxCreateLUT(context, VX_TYPE_UINT8, 8);
+    EXPECT_EQ_VX_STATUS(VX_ERROR_NOT_COMPATIBLE, vxuCopy(context, example1, example2));
+    VX_CALL(vxReleaseReference(&example1));
+    VX_CALL(vxReleaseReference(&example2));
 }
 
 /* Check sub-image. This must cover sub-images
@@ -1112,7 +1261,7 @@ TEST (copySwap, testSubObjectsMaxOfSubImages )
     vx_image sub_sub_images_1 [TIVX_IMAGE_MAX_SUBIMAGES][TIVX_IMAGE_MAX_SUBIMAGES];
     vx_image sub_sub_images_2 [TIVX_IMAGE_MAX_SUBIMAGES][TIVX_IMAGE_MAX_SUBIMAGES];
     vx_image sub_sub_sub_image_1;
-    vx_image yuv_image[TIVX_MAX_SUBIMAGE_DEPTH+1U];
+    vx_image yuv_image[TIVX_IMAGE_MAX_SUBIMAGE_DEPTH+1U];
 
     vx_rectangle_t rect0 = {.start_x = 0, .start_y = 0, .end_x = 10, .end_y = 10};
     vx_rectangle_t rect1 = {.start_x = 0, .start_y = 0, .end_x = 8, .end_y = 8};    
@@ -1164,7 +1313,7 @@ TEST (copySwap, testSubObjectsMaxOfSubImages )
     EXPECT_EQ_VX_STATUS(VX_SUCCESS, checkImage(sub_sub_images_2[10][10], 0x42, 0xab));
 
     /* add a negative test by adding a last element as a child of the last element
-     in fact bigger than TIVX_MAX_SUBIMAGE_DEPTH */
+     in fact bigger than TIVX_IMAGE_MAX_SUBIMAGE_DEPTH */
     sub_sub_sub_image_1 = vxCreateImageFromROI(sub_sub_images_1[TIVX_IMAGE_MAX_SUBIMAGES-1][TIVX_IMAGE_MAX_SUBIMAGES-1], &rect1);
     /* get if this is a valid object */
     EXPECT_EQ_VX_STATUS(VX_ERROR_NO_RESOURCES, vxGetStatus(vxCastRefFromImage(sub_sub_sub_image_1)));
@@ -1192,17 +1341,17 @@ TEST (copySwap, testSubObjectsMaxOfSubImages )
     /* add a negative test for creating image from channel*/
     parent_image_1 = vxCreateImage(context, 16, 16, VX_DF_IMAGE_IYUV);
     yuv_image[0U] = vxCreateImageFromChannel(parent_image_1, VX_CHANNEL_Y);
-    for (i = 1; i < TIVX_MAX_SUBIMAGE_DEPTH; ++i)
+    for (i = 1; i < TIVX_IMAGE_MAX_SUBIMAGE_DEPTH; ++i)
     {
         yuv_image[i] = vxCreateImageFromROI(yuv_image[i-1], &rect0);
     }
     /* last level cannot be created */
-    yuv_image[TIVX_MAX_SUBIMAGE_DEPTH] = vxCreateImageFromROI(yuv_image[TIVX_MAX_SUBIMAGE_DEPTH-1], &rect0);
-    EXPECT_EQ_VX_STATUS(VX_ERROR_NO_RESOURCES, vxGetStatus(vxCastRefFromImage(yuv_image[TIVX_MAX_SUBIMAGE_DEPTH])));
+    yuv_image[TIVX_IMAGE_MAX_SUBIMAGE_DEPTH] = vxCreateImageFromROI(yuv_image[TIVX_IMAGE_MAX_SUBIMAGE_DEPTH-1], &rect0);
+    EXPECT_EQ_VX_STATUS(VX_ERROR_NO_RESOURCES, vxGetStatus(vxCastRefFromImage(yuv_image[TIVX_IMAGE_MAX_SUBIMAGE_DEPTH])));
 
     /* release the images */
     VX_CALL(vxReleaseImage(&parent_image_1));
-    for (i = 0; i < TIVX_MAX_SUBIMAGE_DEPTH; ++i)
+    for (i = 0; i < TIVX_IMAGE_MAX_SUBIMAGE_DEPTH; ++i)
     {
         VX_CALL(vxReleaseImage(&yuv_image[i]));
     }      
@@ -1883,6 +2032,48 @@ TEST(copySwap, testMoveRemoval)
     }
 }
 
+TEST(copySwap, testMoveRemovalLimits)
+{
+    vx_status status = VX_SUCCESS;
+    vx_context context = context_->vx_context_;
+    vx_graph graph = NULL;
+    int i;
+
+    ASSERT_VX_OBJECT(graph = vxCreateGraph(context), VX_TYPE_GRAPH);
+
+    vx_image images_0[] =
+    {
+        vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8), //0
+        vxCreateVirtualImage(graph, 10, 10, VX_DF_IMAGE_U8), //1
+        vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8), //2
+        vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8), //3
+        vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8), //4
+        vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8), //5
+        vxCreateVirtualImage(graph, 10, 10, VX_DF_IMAGE_U8), //6
+    };
+
+    vx_node nodes_0[] =
+    {
+        vxMoveNode(graph, (vx_reference)images_0[0], (vx_reference)images_0[1]),
+        vxNotNode(graph, images_0[1], images_0[2]),
+        vxNotNode(graph, images_0[1], images_0[3]),
+        vxMoveNode(graph, (vx_reference)images_0[5], (vx_reference)images_0[6]),
+        vxOrNode(graph, images_0[3], images_0[6], images_0[4])
+    };
+    EXPECT_EQ_VX_STATUS(VX_SUCCESS, nodeIsOptimised(graph, nodes_0[0]));
+    EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxProcessGraph(graph));
+    
+    for (i = 0; i < dimof(images_0); ++i)
+    {
+        vxReleaseImage(&images_0[i]);
+    }
+    for (i = 0; i < dimof(nodes_0); ++i)
+    {
+        vxReleaseNode(&nodes_0[i]);
+    }
+    vxReleaseGraph(&graph);
+}
+
 /* Test for correct sequence of execution even when copy nodes have been removed */
 TEST(copySwap, testCopySequence)
 {
@@ -2162,6 +2353,52 @@ TEST(copySwap, testContainers)
     VX_CALL(vxReleaseObjectArray(&array2));
 }
 
+TEST(copySwap, testImportFromHandle)
+{
+    /*import images from handle and copy or swap it
+      the imported image should have the same size and format 
+      but the size should be different
+    */
+    vx_image image;
+    vx_imagepatch_addressing_t addr;
+    vx_df_image format = VX_DF_IMAGE_U8;
+    vx_context context = context_->vx_context_;
+    void* ptrs;
+
+    int channel[4] = { 0, 0, 0, 0 };
+    channel[0] = VX_CHANNEL_0;
+    size_t plane_size = 0;
+    addr.dim_x    = 24;
+    addr.dim_y    = 24;
+    addr.stride_x = 1;
+    addr.stride_y = 24;
+    addr.scale_x  = VX_SCALE_UNITY;
+    addr.scale_y  = VX_SCALE_UNITY;
+    addr.step_x = 1;
+    addr.step_y = 1;
+
+    plane_size = 24 * 24;
+    ptrs = ct_alloc_mem(plane_size);
+    /* init memory */
+    ct_memset(ptrs, 0xff, plane_size);    
+
+    image = vxCreateImageFromHandle(context, format, &addr, &ptrs, (vx_enum)VX_MEMORY_TYPE_HOST);    
+    ASSERT_VX_OBJECT(image, VX_TYPE_IMAGE);
+    vx_rectangle_t rect = {.start_x = 0, .start_y = 0, .end_x = 24, .end_y = 24};
+    /* create a vx_image with the same format and dimensions */
+    vx_image image2 = vxCreateImage(context, 24, 24, format);
+    ASSERT_VX_OBJECT(image2, VX_TYPE_IMAGE);
+    EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxuCopy(context, (vx_reference)image, (vx_reference)image2));
+    rect.end_x = 12;
+    rect.end_y = 12;
+    vx_image roi = vxCreateImageFromROI((vx_image)image, &rect);
+    EXPECT_EQ_VX_STATUS(VX_ERROR_NOT_SUPPORTED, vxuSwap(context, (vx_reference)image, (vx_reference)image2));
+
+    vxReleaseImage(&roi);
+    vxReleaseImage(&image);
+    vxReleaseImage(&image2);
+}
+
 TESTCASE_TESTS(copySwap,
                testCopy,
                testSwap,
@@ -2176,8 +2413,10 @@ TESTCASE_TESTS(copySwap,
                testNoCopyRemovalBidirectional,
                testMaxNodes,
                testMoveRemoval,
+               testMoveRemovalLimits,
                testCopySequence,
                testSubObjectsOfImages,
                testSubObjectsMaxOfSubImages,
                testDelays,
-               testContainers)
+               testContainers,
+               testImportFromHandle)

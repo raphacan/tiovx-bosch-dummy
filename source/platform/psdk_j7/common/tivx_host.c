@@ -77,26 +77,31 @@ static void tivxHostInitLocal(void)
         tivxRegisterOpenVXCoreKernels();
         tivxRegisterOpenVXExtKernels();
 
+        if(tivxGetSelfCpuId()==(vx_enum)TIVX_CPU_ID_MPU_0) /* TIOVX-1946- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_HOST_UBR001 */
+        {
+            tivxPlatformSetHostTargetId(TIVX_TARGET_ID_MPU_0);
+        }
         #if defined(SOC_AM62A)
-        if(tivxGetSelfCpuId()==(vx_enum)TIVX_CPU_ID_MCU1_0)
+        else if(tivxGetSelfCpuId()==(vx_enum)TIVX_CPU_ID_MCU1_0)
         {
             tivxPlatformSetHostTargetId(TIVX_TARGET_ID_MCU1_0);
         }
         #else
-        if(tivxGetSelfCpuId()==(vx_enum)TIVX_CPU_ID_MCU2_0)
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1732- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_HOST_UM001 */
+        else if(tivxGetSelfCpuId()==(vx_enum)TIVX_CPU_ID_MCU2_0)
         {
             tivxPlatformSetHostTargetId(TIVX_TARGET_ID_MCU2_0);
         }
+#endif
         #endif
-        else
-        if(tivxGetSelfCpuId()==(vx_enum)TIVX_CPU_ID_MPU_0)
-        {
-            tivxPlatformSetHostTargetId(TIVX_TARGET_ID_MPU_0);
-        }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1732- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_HOST_UM002 */
         else
         {
             /* do nothing */
         }
+#endif
 
         VX_PRINT(VX_ZONE_INIT, "Initialization Done for HOST !!!\n");
     }
@@ -106,7 +111,7 @@ static void tivxHostInitLocal(void)
 
 static void tivxHostDeInitLocal(void)
 {
-    if (0U != gInitCount)
+    if (0U != gInitCount) /* TIOVX-1946- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_HOST_UBR002 */
     {
         gInitCount--;
 
@@ -118,10 +123,13 @@ static void tivxHostDeInitLocal(void)
             tivxUnRegisterOpenVXCoreKernels();
         }
     }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1732- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_HOST_UM003 */
     else
     {
         /* ERROR. */
         VX_PRINT(VX_ZONE_ERROR, "De-Initialization Error !!!\n");
     }
+#endif
 }
 

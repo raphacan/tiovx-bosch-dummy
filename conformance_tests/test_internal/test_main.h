@@ -34,5 +34,29 @@ TESTCASE(tivxInternalGraphStream)
 TESTCASE(tivxInternalGraphVerify)
 TESTCASE(tivxInternalNode)
 TESTCASE(tivxInternalImage)
+TESTCASE(tivxInternalArray)
+TESTCASE(tivxInternalLUT)
+TESTCASE(tivxInternalMatrix)
+TESTCASE(tivxInternalKernel)
+TESTCASE(tivxInternaldelay)
+#if defined(A72) || defined(A53) || defined(PC)
+TESTCASE(tivxPosixObjects)
+#endif
+TESTCASE(tivxInternalMetaFormat)
+TESTCASE(tivxInternalGraphPipeline)
+TESTCASE(tivxInternalDataRefQueue)
+TESTCASE(tivxInternalEventQueue)
+TESTCASE(tivxInternalReference)
+
+#if defined(A72) || defined(A53)
+TESTCASE(tivxDmaHeap)
+TESTCASE(tivxTimer)
+#endif
+
+#if defined(LINUX) && !defined(PC)
+TESTCASE(tivxRpmsgChar)
+#endif
+TESTCASE(tivxInternalGraphSort)
+TESTCASE(tivxInternalSafeCasts)
 
 #endif

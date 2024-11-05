@@ -65,8 +65,8 @@ typedef vx_status (* VX_API_CALL tivx_reference_release_callback_f)(vx_reference
  * involving generic references, such as Copy, Select, Swap or Pass
  * \param [in] kernel_enum        A <tt>\ vx_kernel_e </tt> which give the name of vision kernel
  * \param [in] validate_only      A <tt>\ref vx_bool</tt> used to validate if the kernel operation is possible or not
- * \param [in] input              The pointer to a \ref vx_references for the input and outputs used for the kernel operations
- * \param [in] output             The pointer to a \ref vx_references for the output used for the kernel operations
+ * \param [in] input              The pointer to a \ref vx_reference for the input used for the kernel operations
+ * \param [in] output             The pointer to a \ref vx_reference for the output used for the kernel operations
  * \ingroup group_vx_reference
  */
 typedef vx_status (*vx_kernel_callback_f)(vx_enum kernel_enum, vx_bool validate_only, const vx_reference input, const vx_reference output);
@@ -251,6 +251,24 @@ vx_bool ownIsValidType(vx_enum ref_type);
  */
 vx_status ownInitReference(vx_reference ref, vx_context context, vx_enum ref_type, vx_reference scope);
 
+/**
+ * \brief Create mutex used for locking context/graph
+ *
+ * \param [in] ref     The reference
+ *
+ * \ingroup group_vx_reference
+ */
+vx_status ownCreateReferenceLock(vx_reference ref);
+
+/**
+ * \brief Delete mutex used for locking context/graph
+ *
+ * \param [in] ref     The reference
+ *
+ * \ingroup group_vx_reference
+ */
+vx_status ownDeleteReferenceLock(vx_reference ref);
+
 
 /**
  * \brief Check if reference is valid
@@ -298,6 +316,13 @@ vx_reference ownCreateReferenceFromExemplar(
  * \ingroup group_vx_reference
  */
 vx_reference ownReferenceGetHandleFromObjDescId(uint16_t obj_desc_id);
+
+/*!
+ * \brief Function to get the descriptor object from the given reference
+ *
+ * \ingroup group_vx_reference
+ */
+uint16_t ownReferenceGetObjDescId(vx_reference ref);
 
 /*! \brief There are several reference types that are allocated in the same way
  *         This API generalizes this in order to enhance code reuse

@@ -30,14 +30,30 @@
         - utils/rtos
         - utils/timer
 
+    Within the modules which we are in scope for safety, TI will be generating code coverage reports for the safety release during the
+    10.1 release.  As a part of this effort, TI is utilizing macros to remove code from the final report which has approved deviations.
+    Note that these macros are still enabled by default in our build using concerto.  Therefore, if different build systems are being
+    used, the below macros should still be defined in these environments:
+    - LDRA_UNTESTABLE_CODE
+    - HOST_ONLY
+
     Please note the following which are out of scope for safety of TIOVX:
     - OpenVX standard kernels
     - Supernode extension (Note: this is not yet enabled on J7 platforms, but there are still references to it in the framework.
-      These are thus commented out and disabled.)
+      These are wrapped under the BUILD_BAM macro.)
+        - tiovx/source/framework/vx_graph_supernode.c
+        - tiovx/source/framework/vx_super_node.c
     - VXU functions
+        - tiovx/source/vxu
     - Debug logging functionality
+        - tiovx/source/framework/vx_debug.c
+        - tiovx/source/framework/vx_log_resource.c
+        - tiovx/source/platform/psdk_j7/common/tivx_perf.c
     - RT logging functionality
+        - tiovx/source/framework/vx_log_rt_trace.c
+        - tiovx/source/framework/vx_log_rt_trace_host.c
     - Export to dot file functionality
+        - tiovx/source/framework/vx_graph_export_dot.c
 
     Important note to how application shall be written using TIOVX that are used for safety: the "vx-" or "tivx-" functions shall only be used
     within a safety application, not the "own-" prefixed functions.  These functions shall only be called within the context of the framework itself,
@@ -62,7 +78,7 @@
      This serves as an example for how the initializations should be done within a system integrating TIOVX.  There are several modules within the "app_utils"
      project which require initialization in order for TIOVX to work properly, including such items as shared memory, IPC, Sciclient, etc.
 
-     For host side initialization of TIOVX, the appInit function within vision_apps/utils/app_init shall be called.  This functions calls the appCommonInit,
+     For host side initialization of TIOVX, the appInit function within vision_apps/utils/app_init shall be called.  This function calls the appCommonInit,
      \ref tivxInit and \ref tivxHostInit calls.  The appCommonInit call performs the necessary host side initializations outside of TIOVX, including the
      set up of shared memory, IPC, timers as well as some optional initializations such as logging, performance measurement, etc.  This function is supported on
      both Linux and QNX, with the only difference across the two is the resource table usage on Linux (not supported on QNX).  The API also ensures that
@@ -74,6 +90,22 @@
      enabled in the system, certain memory sections may also be required if they are depended on by the respective kernels.
 
      Within the ENABLE_TIOVX macro, the key initialization call in order for TIOVX to be enabled properly is \ref tivxInit.
+
+     Furthermore, specific memory region carveouts are required in order for TIOVX to work properly.  More details can be found in the "Understanding and updating SDK
+     memory map for <SOC>" document in the PSDK RTOS top level developer notes.
+
+     One specific API which is of interest in the set up of these memory regions is the \ref tivxPlatformResetObjDescTableInfo function.  This function resets the
+     object descriptor table at init time.  This function is called solely on the remote core side since the RTOS cores init prior to the A-core.  This function
+     shall not be called from the A-core host side or separate from init time, otherwise it could cause undefined behavior.
+
+     In order to facilitate the adherence to the alignment and size requirements of these regions in the case of custom memory maps, build asserts have
+     been added to the TIOVX code in order to catch issues at the build stage of TIOVX.
+
+     The vision_apps project also provides the "vision_apps_init.sh" script which enables remote core logging on the firmware.  This allows a developer to see if
+     there were any initialization or run-time error logs from the firmware.  Furthermore, the vision_apps firmware performs a ping test once all the required
+     firmwares have been initialized successfully, helping to identify issues during initialization from the remote firmware.  If this ping test does not succeed,
+     it does not allow further processing to occur on that remote core, as it may be in a bad state.  Refer to the vision_apps user guide for more information about
+     this diagnostics for help identifying issues in the remote firmware.
 
      \section TIOVX_SAFETY_USAGE TIOVX Usage Recommendations for Safety
 
@@ -99,6 +131,12 @@
      the TIOVX-based application.  In particular, if using data objects as exemplars or other such elements disconnected from the graph, it is
      possible that the available memory of the system can be reached prior to the call to \ref vxVerifyGraph and thus should be taken into account
      when designing the system.
+
+     \subsection TIOVX_SAFETY_USAGE_NESTED_NODE Nested Node Safety Usage Information
+
+     Nested nodes provide the ability to use the functionality of a \ref vx_graph within a \ref vx_node.  However, graph event handling within
+     a nested node is not yet handled.  Therefore, in the meantime, it is recommended that from the application point of view, a nested node
+     should be registered with a given timeout and that if that timeout is exceeded, the cores which are used within the nested node need to be rebooted.
 
      \subsection TIOVX_SAFETY_USAGE_FURTHER_INFO Further information
 
@@ -284,9 +322,8 @@
      enumeration.  This allows an application to use the \ref vxRegisterEvent API to know when an error has occurred within the process
      callback of a node.
 
-     One limitation of this approach is that the exact error code is not provided, only an event which signals that an error has occurred.
-     At present, the suggested approach for determining any further information is to additionally register a control callback within the
-     node which can be queried by the application if an error has occurred.
+     If more diagnostic information from the node is needed, the suggested approach for determining any further information is to
+     additionally register a control callback within the node which can be queried by the application if an error has occurred.
 
  */
 

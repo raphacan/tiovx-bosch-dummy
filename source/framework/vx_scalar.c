@@ -33,16 +33,16 @@ static vx_status VX_CALLBACK scalarKernelCallback(vx_enum kernel_enum, vx_bool v
  */
 static vx_status copyScalar(vx_reference input, vx_reference output)
 {
-    tivx_obj_desc_scalar_t *ip_obj_desc = (tivx_obj_desc_scalar_t *)input->obj_desc;
-    tivx_obj_desc_scalar_t *op_obj_desc = (tivx_obj_desc_scalar_t *)output->obj_desc;
     vx_status status = ownReferenceLock(output);
     if ((vx_status)VX_SUCCESS == status)
     {
         /* Just copy the entire union from input to output
            use the extra memcopy for volatile struct */
+        tivx_obj_desc_scalar_t *ip_obj_desc = (tivx_obj_desc_scalar_t *)input->obj_desc;
+        tivx_obj_desc_scalar_t *op_obj_desc = (tivx_obj_desc_scalar_t *)output->obj_desc;
         tivx_obj_desc_memcpy(&op_obj_desc->data, &ip_obj_desc->data, (uint32_t)sizeof(op_obj_desc->data));
+        (void)ownReferenceUnlock(output);
     }
-    status = ownReferenceUnlock(output);
     return status;
 }
 
@@ -60,15 +60,15 @@ static vx_status swapScalar(vx_reference input, vx_reference output)
         tivx_obj_desc_memcpy(&data_obj.data, &op_obj_desc->data, (uint32_t)sizeof(data_obj.data));
         tivx_obj_desc_memcpy(&op_obj_desc->data, &ip_obj_desc->data, (uint32_t)sizeof(op_obj_desc->data));
         tivx_obj_desc_memcpy(&ip_obj_desc->data, &data_obj.data, (uint32_t)sizeof(ip_obj_desc->data));
+        (void)ownReferenceUnlock(output);
     }
-    status = ownReferenceUnlock(output);
     return status;
 }
 
 /* Call back function that handles the copy, swap and move kernels */
 static vx_status VX_CALLBACK scalarKernelCallback(vx_enum kernel_enum, vx_bool validate_only, const vx_reference input, const vx_reference output)
 {
-    vx_status res;
+    vx_status res = (vx_status)VX_ERROR_NOT_SUPPORTED;
 
     if ((vx_bool)vx_true_e == validate_only)
     {
@@ -92,9 +92,14 @@ static vx_status VX_CALLBACK scalarKernelCallback(vx_enum kernel_enum, vx_bool v
             case (vx_enum)VX_KERNEL_MOVE:
                 res = swapScalar(input, output);
                 break;
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1701- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_SCALAR_UM003 */
+/* the interface for copy, move and swap is done via the direct adressing mode (vxu_...-) or when creating the corresponding specific node
+   so this is not possible to reach this code because the kernel type is specified by the private functions */
             default:
                 res = (vx_status)VX_ERROR_NOT_SUPPORTED;
                 break;
+#endif
         }
     }
     return (res);
@@ -113,7 +118,7 @@ static vx_status ownScalarToHostMem(vx_scalar scalar, void* user_ptr)
     else
     {
         obj_desc = (tivx_obj_desc_scalar_t *)scalar->base.obj_desc;
-        switch (obj_desc->data_type)
+        switch (obj_desc->data_type) /* TIOVX-1931- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_SCALAR_UBR001 */
         {
             case (vx_enum)VX_TYPE_CHAR:     *(vx_char*)user_ptr = obj_desc->data.chr; break;
             case (vx_enum)VX_TYPE_INT8:     *(vx_int8*)user_ptr = obj_desc->data.s08; break;
@@ -134,10 +139,13 @@ static vx_status ownScalarToHostMem(vx_scalar scalar, void* user_ptr)
             case (vx_enum)VX_TYPE_SIZE:     *(vx_size*)user_ptr = obj_desc->data.size; break;
             case (vx_enum)VX_TYPE_BOOL:     *(vx_bool*)user_ptr = obj_desc->data.boolean; break;
 
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1701- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_SCALAR_UM001 */
             default:
                 VX_PRINT(VX_ZONE_ERROR, "data type is not supported\n");
                 status = (vx_status)VX_ERROR_NOT_SUPPORTED;
                 break;
+#endif
         }
         (void)ownReferenceUnlock(&scalar->base);
     }
@@ -158,7 +166,7 @@ static vx_status ownHostMemToScalar(vx_scalar scalar, const void* user_ptr)
     else
     {
         obj_desc = (tivx_obj_desc_scalar_t *)scalar->base.obj_desc;
-        switch (obj_desc->data_type)
+        switch (obj_desc->data_type) /* TIOVX-1931- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_SCALAR_UBR002 */
         {
             case (vx_enum)VX_TYPE_CHAR:     obj_desc->data.chr = *(const vx_char*)user_ptr; break;
             case (vx_enum)VX_TYPE_INT8:     obj_desc->data.s08 = *(const vx_int8*)user_ptr; break;
@@ -179,10 +187,13 @@ static vx_status ownHostMemToScalar(vx_scalar scalar, const void* user_ptr)
             case (vx_enum)VX_TYPE_SIZE:     obj_desc->data.size = *(const vx_size*)user_ptr; break;
             case (vx_enum)VX_TYPE_BOOL:     obj_desc->data.boolean = *(const vx_bool*)user_ptr; break;
 
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1701- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_SCALAR_UM002 */
             default:
                 VX_PRINT(VX_ZONE_ERROR, "data type is not supported\n");
                 status = (vx_status)VX_ERROR_NOT_SUPPORTED;
                 break;
+#endif
         }
         (void)ownReferenceUnlock(&scalar->base);
     }
@@ -195,8 +206,6 @@ static vx_scalar ownCreateScalar(vx_reference scope, vx_enum data_type, const vo
     vx_scalar scalar = NULL;
     vx_reference ref = NULL;
     tivx_obj_desc_scalar_t *obj_desc = NULL;
-    vx_context context;
-	vx_status status = (vx_status)VX_SUCCESS;
 
     if (ownIsValidSpecificReference(scope, (vx_enum)VX_TYPE_GRAPH) == (vx_bool)vx_true_e)
     {
@@ -227,11 +236,7 @@ static vx_scalar ownCreateScalar(vx_reference scope, vx_enum data_type, const vo
                 obj_desc = (tivx_obj_desc_scalar_t*)ownObjDescAlloc((vx_enum)TIVX_OBJ_DESC_SCALAR, vxCastRefFromScalar(scalar));
                 if(obj_desc==NULL)
                 {
-                    status = vxReleaseScalar(&scalar);
-                    if((vx_status)VX_SUCCESS != status)
-                    {
-                        VX_PRINT(VX_ZONE_ERROR,"Failed to release reference to scalar object\n");
-                    }
+                    (void)vxReleaseScalar(&scalar);
 
                     vxAddLogEntry(&context->base, (vx_status)VX_ERROR_NO_RESOURCES, "Could not allocate scalar object descriptor\n");
                     scalar = (vx_scalar)ownGetErrorObject(context, (vx_status)VX_ERROR_NO_RESOURCES);
@@ -275,7 +280,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxQueryScalar(vx_scalar scalar, vx_enum attri
     vx_status status = (vx_status)VX_SUCCESS;
     vx_scalar pscalar = (vx_scalar)scalar;
 
-    if (ownIsValidSpecificReference(vxCastRefFromScalar(pscalar),(vx_enum)VX_TYPE_SCALAR) == (vx_bool)vx_false_e)
+    if ((ownIsValidSpecificReference(vxCastRefFromScalar(pscalar),(vx_enum)VX_TYPE_SCALAR) == (vx_bool)vx_false_e) ||  ((vx_scalar)scalar->base.obj_desc == NULL))
     {
         VX_PRINT(VX_ZONE_ERROR, "invalid reference\n");
         status = (vx_status)VX_ERROR_INVALID_REFERENCE;

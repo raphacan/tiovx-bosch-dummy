@@ -95,7 +95,7 @@ uint32_t ownGetModuleCount(void)
     {
         if( (g_module_table[idx].publish != NULL)
             &&
-            (g_module_table[idx].unpublish != NULL)
+            (g_module_table[idx].unpublish != NULL) /* TIOVX-1912- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_MODULE_UBR001 */
             &&
             (g_module_table[idx].is_loaded != (vx_bool)vx_false_e)
           )
@@ -158,7 +158,7 @@ VX_API_ENTRY vx_status VX_API_CALL tivxUnRegisterModule(const char *name)
     {
         if( (g_module_table[idx].publish != NULL)
             &&
-            (g_module_table[idx].unpublish != NULL)
+            (g_module_table[idx].unpublish != NULL) /* TIOVX-1912- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_MODULE_UBR002 */
             &&
             (strncmp(g_module_table[idx].name, name, TIVX_MODULE_MAX_NAME) == 0)
           )
@@ -189,7 +189,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxLoadKernels(vx_context context, const vx_ch
     {
         if( (g_module_table[idx].publish != NULL)
             &&
-            (g_module_table[idx].unpublish != NULL)
+            (g_module_table[idx].unpublish != NULL)  /* TIOVX-1912- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_MODULE_UBR003  */
             &&
             (strncmp(g_module_table[idx].name, module, TIVX_MODULE_MAX_NAME) == 0)
           )
@@ -202,10 +202,14 @@ VX_API_ENTRY vx_status VX_API_CALL vxLoadKernels(vx_context context, const vx_ch
                 kernels_loaded ++;
                 break;
             }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1873- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_MODULE_UTJT001 */
             else
             {
                 VX_PRINT(VX_ZONE_ERROR, "Publish function for module %s failed\n", module);
             }
+/* END: TIOVX_CODE_COVERAGE_MODULE_UTJT001 */
+#endif
         }
     }
     if((idx>=dimof(g_module_table)) && (0U == kernels_loaded))
@@ -230,7 +234,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxUnloadKernels(vx_context context, const vx_
     {
         if( (g_module_table[idx].publish != NULL)
             &&
-            (g_module_table[idx].unpublish != NULL)
+            (g_module_table[idx].unpublish != NULL)  /* TIOVX-1912- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_MODULE_UBR004  */
             &&
             (strncmp(g_module_table[idx].name, module, TIVX_MODULE_MAX_NAME) == 0)
             &&
@@ -238,11 +242,13 @@ VX_API_ENTRY vx_status VX_API_CALL vxUnloadKernels(vx_context context, const vx_
           )
         {
             status = g_module_table[idx].unpublish(context);
-
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1718- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_MODULE_UM001 */
             if ((vx_status)VX_SUCCESS != status)
             {
-                VX_PRINT(VX_ZONE_ERROR, "Unublish function for module %s failed\n", module);
+                VX_PRINT(VX_ZONE_ERROR, "Unpublish function for module %s failed\n", module);
             }
+#endif
             g_module_table[idx].is_loaded = (vx_bool)vx_false_e;
             break;
         }

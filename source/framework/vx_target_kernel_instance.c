@@ -82,24 +82,39 @@ vx_status ownTargetKernelInstanceInit(void)
     }
 
     status = tivxMutexCreate(&g_target_kernel_instance_lock);
+
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1708- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_KERNEL_INSTANCE_UM001 */
     if((vx_status)VX_SUCCESS != status)
     {
         VX_PRINT(VX_ZONE_ERROR,"Failed to create mutex\n");
     }
+#endif
 
     return status;
 }
 
+#if defined(C7X_FAMILY) || defined(R5F) || defined(C66)
+/*LDRA_NOANALYSIS*/
+/* TIOVX-1708-Host only Id: TIOVX_CODE_COVERAGE_HOST_ONLY_TARGET_KERNEL_INSTANCE_UM001 */
+#endif
 void ownTargetKernelInstanceDeInit(void)
 {
     vx_status status = (vx_status)VX_SUCCESS;
 
     status = tivxMutexDelete(&g_target_kernel_instance_lock);
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1708- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_KERNEL_INSTANCE_UM002 */
     if((vx_status)VX_SUCCESS != status)
     {
         VX_PRINT(VX_ZONE_ERROR,"Failed to delete mutex\n");
     }
+#endif
 }
+#if defined(C7X_FAMILY) || defined(R5F) || defined(C66)
+/* END: TIOVX_CODE_COVERAGE_HOST_ONLY_TARGET_KERNEL_INSTANCE_UM001 */
+/*LDRA_ANALYSIS*/
+#endif
 
 tivx_target_kernel_instance ownTargetKernelInstanceAlloc(vx_enum kernel_id, volatile char *kernel_name, vx_enum target_id)
 {
@@ -131,9 +146,9 @@ tivx_target_kernel_instance ownTargetKernelInstanceAlloc(vx_enum kernel_id, vola
     {
         status = tivxMutexLock(g_target_kernel_instance_lock);
 
-        if(status == (vx_status)VX_SUCCESS)
+        if(status == (vx_status)VX_SUCCESS) /* TIOVX-1936- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_KERNEL_INSTANCE_UBR001 */
         {
-            for(i=0; i<dimof(g_target_kernel_instance_table); i++)
+            for(i=0; i<dimof(g_target_kernel_instance_table); i++) /* TIOVX-1936- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_KERNEL_INSTANCE_UBR002 */
             {
                 tmp_kernel_instance = &g_target_kernel_instance_table[i];
                 if(tmp_kernel_instance->kernel_id == (vx_enum)TIVX_TARGET_KERNEL_ID_INVALID)

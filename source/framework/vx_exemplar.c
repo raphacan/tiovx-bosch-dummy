@@ -185,22 +185,16 @@ vx_reference tivxCreateReferenceFromExemplar(
 static vx_reference ownCreateLutFromExemplar(
     vx_context context, vx_lut exemplar)
 {
-    vx_status status = (vx_status)VX_SUCCESS;
     vx_enum data_type;
     vx_size count;
     vx_lut lut = NULL;
 
-    tivxCheckStatus(&status, vxQueryLUT(exemplar, (vx_enum)VX_LUT_TYPE, &data_type,
-        sizeof(data_type)));
-    tivxCheckStatus(&status, vxQueryLUT(exemplar, (vx_enum)VX_LUT_COUNT, &count,
-        sizeof(count)));
+    (void)vxQueryLUT(exemplar, (vx_enum)VX_LUT_TYPE, &data_type,
+        sizeof(data_type));
+    (void)vxQueryLUT(exemplar, (vx_enum)VX_LUT_COUNT, &count,
+        sizeof(count));
 
-#ifdef LDRA_UNTESTABLE_CODE
-    if ((vx_status)VX_SUCCESS == status)
-#endif
-    {
-        lut = vxCreateLUT(context, data_type, count);
-    }
+    lut = vxCreateLUT(context, data_type, count);
 
     return vxCastRefFromLUT(lut);
 }
@@ -208,26 +202,20 @@ static vx_reference ownCreateLutFromExemplar(
 static vx_reference ownCreateRemapFromExemplar(
     vx_context context, vx_remap exemplar)
 {
-    vx_status status = (vx_status)VX_SUCCESS;
     vx_uint32 src_width, src_height, dst_width, dst_height;
     vx_remap rem = NULL;
 
-    tivxCheckStatus(&status, vxQueryRemap(exemplar, (vx_enum)VX_REMAP_SOURCE_WIDTH, &src_width,
-        sizeof(src_width)));
-    tivxCheckStatus(&status, vxQueryRemap(exemplar, (vx_enum)VX_REMAP_SOURCE_HEIGHT, &src_height,
-        sizeof(src_height)));
-    tivxCheckStatus(&status, vxQueryRemap(exemplar, (vx_enum)VX_REMAP_DESTINATION_WIDTH, &dst_width,
-        sizeof(dst_width)));
-    tivxCheckStatus(&status, vxQueryRemap(exemplar, (vx_enum)VX_REMAP_DESTINATION_HEIGHT, &dst_height,
-        sizeof(dst_height)));
+    (void)vxQueryRemap(exemplar, (vx_enum)VX_REMAP_SOURCE_WIDTH, &src_width,
+        sizeof(src_width));
+    (void)vxQueryRemap(exemplar, (vx_enum)VX_REMAP_SOURCE_HEIGHT, &src_height,
+        sizeof(src_height));
+    (void)vxQueryRemap(exemplar, (vx_enum)VX_REMAP_DESTINATION_WIDTH, &dst_width,
+        sizeof(dst_width));
+    (void)vxQueryRemap(exemplar, (vx_enum)VX_REMAP_DESTINATION_HEIGHT, &dst_height,
+        sizeof(dst_height));
 
-#ifdef LDRA_UNTESTABLE_CODE
-    if ((vx_status)VX_SUCCESS == status)
-#endif
-    {
-        rem = vxCreateRemap(context, src_width, src_height, dst_width,
-            dst_height);
-    }
+    rem = vxCreateRemap(context, src_width, src_height, dst_width,
+        dst_height);
 
     return vxCastRefFromRemap(rem);
 }
@@ -235,22 +223,16 @@ static vx_reference ownCreateRemapFromExemplar(
 static vx_reference ownCreateMatrixFromExemplar(
     vx_context context, vx_matrix exemplar)
 {
-    vx_status status = (vx_status)VX_SUCCESS;
     vx_size rows, columns;
     vx_enum type;
     vx_matrix mat = NULL;
 
-    tivxCheckStatus(&status, vxQueryMatrix(exemplar, (vx_enum)VX_MATRIX_TYPE, &type, sizeof(type)));
-    tivxCheckStatus(&status, vxQueryMatrix(exemplar, (vx_enum)(vx_enum)VX_MATRIX_ROWS, &rows, sizeof(rows)));
-    tivxCheckStatus(&status, vxQueryMatrix(exemplar, (vx_enum)VX_MATRIX_COLUMNS, &columns,
-        sizeof(columns)));
+    (void)vxQueryMatrix(exemplar, (vx_enum)VX_MATRIX_TYPE, &type, sizeof(type));
+    (void)vxQueryMatrix(exemplar, (vx_enum)(vx_enum)VX_MATRIX_ROWS, &rows, sizeof(rows));
+    (void)vxQueryMatrix(exemplar, (vx_enum)VX_MATRIX_COLUMNS, &columns,
+        sizeof(columns));
 
-#ifdef LDRA_UNTESTABLE_CODE
-    if ((vx_status)VX_SUCCESS == status)
-#endif
-    {
-        mat = vxCreateMatrix(context, type, columns, rows);
-    }
+    mat = vxCreateMatrix(context, type, columns, rows);
 
     return vxCastRefFromMatrix(mat);
 }
@@ -258,26 +240,20 @@ static vx_reference ownCreateMatrixFromExemplar(
 static vx_reference ownCreatePyramidFromExemplar(
     vx_context context, vx_pyramid exemplar)
 {
-    vx_status status = (vx_status)VX_SUCCESS;
     vx_size levels;
     vx_float32 scale;
     vx_uint32 width, height;
     vx_df_image format;
     vx_pyramid pmd = NULL;
 
-    tivxCheckStatus(&status, vxQueryPyramid(exemplar, (vx_enum)VX_PYRAMID_LEVELS, &levels, sizeof(levels)));
-    tivxCheckStatus(&status, vxQueryPyramid(exemplar, (vx_enum)VX_PYRAMID_SCALE, &scale, sizeof(scale)));
-    tivxCheckStatus(&status, vxQueryPyramid(exemplar, (vx_enum)VX_PYRAMID_WIDTH, &width, sizeof(width)));
-    tivxCheckStatus(&status, vxQueryPyramid(exemplar, (vx_enum)VX_PYRAMID_HEIGHT, &height, sizeof(height)));
-    tivxCheckStatus(&status, vxQueryPyramid(exemplar, (vx_enum)VX_PYRAMID_FORMAT, &format, sizeof(format)));
+    (void)vxQueryPyramid(exemplar, (vx_enum)VX_PYRAMID_LEVELS, &levels, sizeof(levels));
+    (void)vxQueryPyramid(exemplar, (vx_enum)VX_PYRAMID_SCALE, &scale, sizeof(scale));
+    (void)vxQueryPyramid(exemplar, (vx_enum)VX_PYRAMID_WIDTH, &width, sizeof(width));
+    (void)vxQueryPyramid(exemplar, (vx_enum)VX_PYRAMID_HEIGHT, &height, sizeof(height));
+    (void)vxQueryPyramid(exemplar, (vx_enum)VX_PYRAMID_FORMAT, &format, sizeof(format));
 
-#ifdef LDRA_UNTESTABLE_CODE
-    if ((vx_status)VX_SUCCESS == status)
-#endif
-    {
-        pmd = vxCreatePyramid(context, levels, scale, width, height,
+    pmd = vxCreatePyramid(context, levels, scale, width, height,
             format);
-    }
 
     if ((vx_enum)VX_SUCCESS == vxGetStatus((vx_reference)pmd))
     {
@@ -296,20 +272,20 @@ static vx_reference ownCreatePyramidFromExemplar(
 static vx_reference ownCreateImageFromExemplar(
     vx_context context, vx_image exemplar)
 {
-    vx_status status = (vx_status)VX_SUCCESS;
-    vx_uint32 width, height;
+    vx_uint32 width, height, stride_y_alignment;
     vx_df_image format;
     vx_image img = NULL;
 
-    tivxCheckStatus(&status, vxQueryImage(exemplar, (vx_enum)VX_IMAGE_WIDTH, &width, sizeof(width)));
-    tivxCheckStatus(&status, vxQueryImage(exemplar, (vx_enum)VX_IMAGE_HEIGHT, &height, sizeof(height)));
-    tivxCheckStatus(&status, vxQueryImage(exemplar, (vx_enum)VX_IMAGE_FORMAT, &format, sizeof(format)));
+    (void)vxQueryImage(exemplar, (vx_enum)VX_IMAGE_WIDTH, &width, sizeof(width));
+    (void)vxQueryImage(exemplar, (vx_enum)VX_IMAGE_HEIGHT, &height, sizeof(height));
+    (void)vxQueryImage(exemplar, (vx_enum)VX_IMAGE_FORMAT, &format, sizeof(format));
+    (void)vxQueryImage(exemplar, (vx_enum)TIVX_IMAGE_STRIDE_Y_ALIGNMENT, &stride_y_alignment, sizeof(stride_y_alignment));
 
-#ifdef LDRA_UNTESTABLE_CODE
-    if ((vx_status)VX_SUCCESS == status)
-#endif
+    img = vxCreateImage(context, width, height, format);
+
+    if ((vx_status)VX_SUCCESS == vxGetStatus(vxCastRefFromImage(img)))
     {
-        img = vxCreateImage(context, width, height, format);
+        (void)vxSetImageAttribute(img, (vx_enum)TIVX_IMAGE_STRIDE_Y_ALIGNMENT, &stride_y_alignment, sizeof(stride_y_alignment));
     }
 
     return vxCastRefFromImage(img);
@@ -318,20 +294,14 @@ static vx_reference ownCreateImageFromExemplar(
 static vx_reference ownCreateArrayFromExemplar(
     vx_context context, vx_array exemplar)
 {
-    vx_status status = (vx_status)VX_SUCCESS;
     vx_enum type;
     vx_size capacity;
     vx_array arr = NULL;
 
-    tivxCheckStatus(&status, vxQueryArray(exemplar, (vx_enum)VX_ARRAY_ITEMTYPE, &type, sizeof(type)));
-    tivxCheckStatus(&status, vxQueryArray(exemplar, (vx_enum)VX_ARRAY_CAPACITY, &capacity, sizeof(capacity)));
+    (void)vxQueryArray(exemplar, (vx_enum)VX_ARRAY_ITEMTYPE, &type, sizeof(type));
+    (void)vxQueryArray(exemplar, (vx_enum)VX_ARRAY_CAPACITY, &capacity, sizeof(capacity));
 
-#ifdef LDRA_UNTESTABLE_CODE
-    if ((vx_status)VX_SUCCESS == status)
-#endif
-    {
-        arr = vxCreateArray(context, type, capacity);
-    }
+    arr = vxCreateArray(context, type, capacity);
 
     return vxCastRefFromArray(arr);
 }
@@ -339,18 +309,12 @@ static vx_reference ownCreateArrayFromExemplar(
 static vx_reference ownCreateScalarFromExemplar(
     vx_context context, vx_scalar exemplar)
 {
-    vx_status status = (vx_status)VX_SUCCESS;
     vx_enum type;
     vx_scalar sc = NULL;
 
-    tivxCheckStatus(&status, vxQueryScalar(exemplar, (vx_enum)VX_SCALAR_TYPE, &type, sizeof(type)));
+    (void)vxQueryScalar(exemplar, (vx_enum)VX_SCALAR_TYPE, &type, sizeof(type));
 
-#ifdef LDRA_UNTESTABLE_CODE
-    if ((vx_status)VX_SUCCESS == status)
-#endif
-    {
-        sc = vxCreateScalar(context, type, NULL);
-    }
+    sc = vxCreateScalar(context, type, NULL);
 
     return vxCastRefFromScalar(sc);
 }
@@ -358,22 +322,16 @@ static vx_reference ownCreateScalarFromExemplar(
 static vx_reference ownCreateDistributionFromExemplar(
     vx_context context, vx_distribution exemplar)
 {
-    vx_status status = (vx_status)VX_SUCCESS;
     vx_size num_bins;
     vx_int32 offset;
     vx_uint32 range;
     vx_distribution dist = NULL;
 
-    tivxCheckStatus(&status, vxQueryDistribution(exemplar, (vx_enum)VX_DISTRIBUTION_OFFSET, &offset, sizeof(offset)));
-    tivxCheckStatus(&status, vxQueryDistribution(exemplar, (vx_enum)VX_DISTRIBUTION_RANGE, &range, sizeof(range)));
-    tivxCheckStatus(&status, vxQueryDistribution(exemplar, (vx_enum)VX_DISTRIBUTION_BINS, &num_bins, sizeof(num_bins)));
+    (void)vxQueryDistribution(exemplar, (vx_enum)VX_DISTRIBUTION_OFFSET, &offset, sizeof(offset));
+    (void)vxQueryDistribution(exemplar, (vx_enum)VX_DISTRIBUTION_RANGE, &range, sizeof(range));
+    (void)vxQueryDistribution(exemplar, (vx_enum)VX_DISTRIBUTION_BINS, &num_bins, sizeof(num_bins));
 
-#ifdef LDRA_UNTESTABLE_CODE
-    if ((vx_status)VX_SUCCESS == status)
-#endif
-    {
-        dist = vxCreateDistribution(context, num_bins, offset, range);
-    }
+    dist = vxCreateDistribution(context, num_bins, offset, range);
 
     return vxCastRefFromDistribution(dist);
 }
@@ -381,22 +339,16 @@ static vx_reference ownCreateDistributionFromExemplar(
 static vx_reference ownCreateThresholdFromExemplar(
     vx_context context, vx_threshold exemplar)
 {
-    vx_status status = (vx_status)VX_SUCCESS;
     vx_enum thr_type;
     vx_enum data_type;
     vx_threshold thr = NULL;
 
-    tivxCheckStatus(&status, vxQueryThreshold(exemplar, (vx_enum)VX_THRESHOLD_DATA_TYPE, &data_type,
-        sizeof(data_type)));
-    tivxCheckStatus(&status, vxQueryThreshold(exemplar, (vx_enum)VX_THRESHOLD_TYPE, &thr_type,
-        sizeof(thr_type)));
+    (void)vxQueryThreshold(exemplar, (vx_enum)VX_THRESHOLD_DATA_TYPE, &data_type,
+        sizeof(data_type));
+    (void)vxQueryThreshold(exemplar, (vx_enum)VX_THRESHOLD_TYPE, &thr_type,
+        sizeof(thr_type));
 
-#ifdef LDRA_UNTESTABLE_CODE
-    if ((vx_status)VX_SUCCESS == status)
-#endif
-    {
-        thr = vxCreateThreshold(context, thr_type, data_type);
-    }
+    thr = vxCreateThreshold(context, thr_type, data_type);
 
     return vxCastRefFromThreshold(thr);
 }
@@ -404,18 +356,14 @@ static vx_reference ownCreateThresholdFromExemplar(
 static vx_reference ownCreateConvolutionFromExemplar(
     vx_context context, vx_convolution exemplar)
 {
-    vx_status status = (vx_status)VX_SUCCESS;
     vx_size rows, columns;
     vx_convolution conv = NULL;
 
-    tivxCheckStatus(&status, vxQueryConvolution(exemplar, (vx_enum)VX_CONVOLUTION_ROWS, &rows, sizeof(rows)));
-    tivxCheckStatus(&status, vxQueryConvolution(exemplar, (vx_enum)VX_CONVOLUTION_COLUMNS, &columns,
-        sizeof(columns)));
+    (void)vxQueryConvolution(exemplar, (vx_enum)VX_CONVOLUTION_ROWS, &rows, sizeof(rows));
+    (void)vxQueryConvolution(exemplar, (vx_enum)VX_CONVOLUTION_COLUMNS, &columns,
+        sizeof(columns));
 
-    if ((vx_status)VX_SUCCESS == status)
-    {
-        conv = vxCreateConvolution(context, columns, rows);
-    }
+    conv = vxCreateConvolution(context, columns, rows);
 
     return vxCastRefFromConvolution(conv);
 }
@@ -423,32 +371,24 @@ static vx_reference ownCreateConvolutionFromExemplar(
 static vx_reference ownCreateObjectArrayFromExemplar(
     vx_context context, vx_object_array exemplar)
 {
-    vx_status status = (vx_status)VX_SUCCESS;
     vx_size count;
     vx_reference objarr_item_exemplar;
     vx_object_array objarr = NULL;
 
-    tivxCheckStatus(&status, vxQueryObjectArray(exemplar, (vx_enum)VX_OBJECT_ARRAY_NUMITEMS, &count, sizeof(count)));
+    vxQueryObjectArray(exemplar, (vx_enum)VX_OBJECT_ARRAY_NUMITEMS, &count, sizeof(count));
+
+    objarr_item_exemplar = vxGetObjectArrayItem(exemplar, 0);
 #ifdef LDRA_UNTESTABLE_CODE
-    if ((vx_status)VX_SUCCESS == status)
+/* TIOVX-1721- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_EXEMPLER_UM011 */
+    if(objarr_item_exemplar==NULL)
+    {
+        VX_PRINT(VX_ZONE_ERROR,"Invalid object array reference\n");
+    }
+    else
 #endif
     {
-        objarr_item_exemplar = vxGetObjectArrayItem(exemplar, 0);
-#ifdef LDRA_UNTESTABLE_CODE
-        if(objarr_item_exemplar==NULL)
-        {
-            VX_PRINT(VX_ZONE_ERROR,"Invalid object array reference\n");
-        }
-        else
-#endif
-        {
-            objarr = vxCreateObjectArray(context, objarr_item_exemplar, count);
-            status = vxReleaseReference(&objarr_item_exemplar);
-            if((vx_status)VX_SUCCESS != status)
-            {
-                VX_PRINT(VX_ZONE_ERROR,"Failed to release reference to object item exemplar\n");
-            }    
-        }
+        objarr = vxCreateObjectArray(context, objarr_item_exemplar, count);
+        (void)vxReleaseReference(&objarr_item_exemplar);
     }
 
     return vxCastRefFromObjectArray(objarr);
@@ -457,22 +397,18 @@ static vx_reference ownCreateObjectArrayFromExemplar(
 static vx_reference ownCreateTensorFromExemplar(
     vx_context context, vx_tensor exemplar)
 {
-    vx_status status = (vx_status)VX_SUCCESS;
     vx_size num_dims;
     vx_size dims[TIVX_CONTEXT_MAX_TENSOR_DIMS];
     vx_enum type;
     vx_int8 fixed;
     vx_tensor tensor = NULL;
 
-    tivxCheckStatus(&status, vxQueryTensor(exemplar, (vx_enum)VX_TENSOR_NUMBER_OF_DIMS, &num_dims, sizeof(num_dims)));
-    tivxCheckStatus(&status, vxQueryTensor(exemplar, (vx_enum)VX_TENSOR_DIMS, &dims, sizeof(dims)));
-    tivxCheckStatus(&status, vxQueryTensor(exemplar, (vx_enum)VX_TENSOR_DATA_TYPE, &type, sizeof(type)));
-    tivxCheckStatus(&status, vxQueryTensor(exemplar, (vx_enum)VX_TENSOR_FIXED_POINT_POSITION, &fixed, sizeof(fixed)));
+    (void)vxQueryTensor(exemplar, (vx_enum)VX_TENSOR_NUMBER_OF_DIMS, &num_dims, sizeof(num_dims));
+    (void)vxQueryTensor(exemplar, (vx_enum)VX_TENSOR_DIMS, &dims, sizeof(dims));
+    (void)vxQueryTensor(exemplar, (vx_enum)VX_TENSOR_DATA_TYPE, &type, sizeof(type));
+    (void)vxQueryTensor(exemplar, (vx_enum)VX_TENSOR_FIXED_POINT_POSITION, &fixed, sizeof(fixed));
 
-    if ((vx_status)VX_SUCCESS == status)
-    {
-        tensor = vxCreateTensor(context, num_dims, dims, type, fixed);
-    }
+    tensor = vxCreateTensor(context, num_dims, dims, type, fixed);
 
     return vxCastRefFromTensor(tensor);
 }
@@ -480,20 +416,14 @@ static vx_reference ownCreateTensorFromExemplar(
 static vx_reference ownCreateUserDataObjectFromExemplar(
     vx_context context, vx_user_data_object exemplar)
 {
-    vx_status status = (vx_status)VX_SUCCESS;
     vx_char type_name[VX_MAX_REFERENCE_NAME];
     vx_size size;
     vx_user_data_object user_data_object = NULL;
 
-    tivxCheckStatus(&status, vxQueryUserDataObject(exemplar, (vx_enum)VX_USER_DATA_OBJECT_NAME, &type_name, sizeof(type_name)));
-    tivxCheckStatus(&status, vxQueryUserDataObject(exemplar, (vx_enum)VX_USER_DATA_OBJECT_SIZE, &size, sizeof(size)));
+    vxQueryUserDataObject(exemplar, (vx_enum)VX_USER_DATA_OBJECT_NAME, &type_name, sizeof(type_name));
+    vxQueryUserDataObject(exemplar, (vx_enum)VX_USER_DATA_OBJECT_SIZE, &size, sizeof(size));
 
-#ifdef LDRA_UNTESTABLE_CODE
-    if ((vx_status)VX_SUCCESS == status)
-#endif
-    {
-        user_data_object = vxCreateUserDataObject(context, type_name, size, NULL);
-    }
+    user_data_object = vxCreateUserDataObject(context, type_name, size, NULL);
 
     return vxCastRefFromUserDataObject(user_data_object);
 }
@@ -501,24 +431,18 @@ static vx_reference ownCreateUserDataObjectFromExemplar(
 static vx_reference ownCreateRawImageFromExemplar(
     vx_context context, tivx_raw_image exemplar)
 {
-    vx_status status = (vx_status)VX_SUCCESS;
     tivx_raw_image img = NULL;
     tivx_raw_image_create_params_t params;
 
-    tivxCheckStatus(&status, tivxQueryRawImage(exemplar, (vx_enum)TIVX_RAW_IMAGE_WIDTH, &params.width, sizeof(params.width)));
-    tivxCheckStatus(&status, tivxQueryRawImage(exemplar, (vx_enum)TIVX_RAW_IMAGE_HEIGHT, &params.height, sizeof(params.height)));
-    tivxCheckStatus(&status, tivxQueryRawImage(exemplar, (vx_enum)TIVX_RAW_IMAGE_NUM_EXPOSURES, &params.num_exposures, sizeof(params.num_exposures)));
-    tivxCheckStatus(&status, tivxQueryRawImage(exemplar, (vx_enum)TIVX_RAW_IMAGE_LINE_INTERLEAVED, &params.line_interleaved, sizeof(params.line_interleaved)));
-    tivxCheckStatus(&status, tivxQueryRawImage(exemplar, (vx_enum)TIVX_RAW_IMAGE_FORMAT, &params.format, sizeof(params.format)));
-    tivxCheckStatus(&status, tivxQueryRawImage(exemplar, (vx_enum)TIVX_RAW_IMAGE_META_HEIGHT_BEFORE, &params.meta_height_before, sizeof(params.meta_height_before)));
-    tivxCheckStatus(&status, tivxQueryRawImage(exemplar, (vx_enum)TIVX_RAW_IMAGE_META_HEIGHT_AFTER, &params.meta_height_after, sizeof(params.meta_height_after)));
+    tivxQueryRawImage(exemplar, (vx_enum)TIVX_RAW_IMAGE_WIDTH, &params.width, sizeof(params.width));
+    tivxQueryRawImage(exemplar, (vx_enum)TIVX_RAW_IMAGE_HEIGHT, &params.height, sizeof(params.height));
+    tivxQueryRawImage(exemplar, (vx_enum)TIVX_RAW_IMAGE_NUM_EXPOSURES, &params.num_exposures, sizeof(params.num_exposures));
+    tivxQueryRawImage(exemplar, (vx_enum)TIVX_RAW_IMAGE_LINE_INTERLEAVED, &params.line_interleaved, sizeof(params.line_interleaved));
+    tivxQueryRawImage(exemplar, (vx_enum)TIVX_RAW_IMAGE_FORMAT, &params.format, sizeof(params.format));
+    tivxQueryRawImage(exemplar, (vx_enum)TIVX_RAW_IMAGE_META_HEIGHT_BEFORE, &params.meta_height_before, sizeof(params.meta_height_before));
+    tivxQueryRawImage(exemplar, (vx_enum)TIVX_RAW_IMAGE_META_HEIGHT_AFTER, &params.meta_height_after, sizeof(params.meta_height_after));
 
-#ifdef LDRA_UNTESTABLE_CODE
-    if ((vx_status)VX_SUCCESS == status)
-#endif
-    {
-        img = tivxCreateRawImage(context, &params);
-    }
+    img = tivxCreateRawImage(context, &params);
 
     return (vx_reference)img;
 }

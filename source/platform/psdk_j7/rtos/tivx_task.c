@@ -31,7 +31,7 @@ static void tivxTaskDefHandle(void* arg0, void* arg1)
 {
     tivx_task *task;
 
-    if (0U != (uintptr_t)arg0)
+    if (0U != (uintptr_t)arg0) /* TIOVX-1885- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TASK_UBR001 */
     {
         task = (tivx_task *)arg0;
 
@@ -58,7 +58,7 @@ vx_status tivxTaskCreate(tivx_task *task, const tivx_task_create_params_t *param
     app_rtos_task_handle_t tskHndl;
     app_rtos_task_params_t rtos_task_prms;
 
-    if ((NULL != task) && (NULL != params))
+    if ((NULL != task) && (NULL != params) && (NULL != params->task_main))
     {
         /* Filling tivx_task structure */
         task->stack_ptr            = params->stack_ptr;
@@ -112,11 +112,14 @@ vx_status tivxTaskDelete(tivx_task *task)
     if ((NULL != task) && (NULL != task->tsk_handle))
     {
         ret_status = appRtosTaskDelete((app_rtos_task_handle_t*)&task->tsk_handle);
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1761- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_RTOS_TASK_UM001 */
         if (ret_status != (app_rtos_status_t)0)
         {
             VX_PRINT(VX_ZONE_ERROR,"Task_Delete: Task deletion failed\n");
             status = (vx_status)VX_FAILURE;
         }
+#endif
     }
     else
     {

@@ -205,11 +205,7 @@ vx_user_data_object ownCreateUserDataObject(
                     (vx_enum)TIVX_OBJ_DESC_USER_DATA_OBJECT, vxCastRefFromUserDataObject(user_data_object));
                 if(user_data_object->base.obj_desc==NULL)
                 {
-                    status = vxReleaseUserDataObject(&user_data_object);
-                    if((vx_status)VX_SUCCESS != status)
-                    {
-                        VX_PRINT(VX_ZONE_ERROR,"Failed to release reference of user data object\n");
-                    }
+                    (void)vxReleaseUserDataObject(&user_data_object);
 
                     vxAddLogEntry(&context->base, (vx_status)VX_ERROR_NO_RESOURCES,
                         "Could not allocate user data object descriptor\n");
@@ -234,6 +230,8 @@ vx_user_data_object ownCreateUserDataObject(
 
                     if(status != (vx_status)VX_SUCCESS)
                     {
+                        (void)vxReleaseUserDataObject(&user_data_object);
+
                         user_data_object = (vx_user_data_object)ownGetErrorObject(
                             context, (vx_status)VX_ERROR_INVALID_PARAMETERS);
                     }
@@ -313,8 +311,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxQueryUserDataObject (
                     status = (vx_status)VX_ERROR_INVALID_PARAMETERS;
                 }
                 break;
-            case (vx_enum)TIVX_USER_DATA_OBJECT_VALID_SIZE:
-            case VX_USER_DATA_OBJECT_VALID_SIZE:
+            case (vx_enum)VX_USER_DATA_OBJECT_VALID_SIZE:
                 if (VX_CHECK_PARAM(ptr, size, vx_size, 0x3U))
                 {
                     *(vx_size *)ptr = obj_desc->valid_mem_size;
@@ -334,14 +331,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxQueryUserDataObject (
     return status;
 }
 
-/* backward compatibility */
-VX_API_ENTRY vx_status  tivxSetUserDataObjectAttribute(
-    vx_user_data_object user_data_object, vx_enum attribute, const void *ptr, vx_size size)
-{
-    return vxSetUserDataObjectAttribute(user_data_object, attribute, ptr, size);
-}
-
-VX_API_ENTRY vx_status vxSetUserDataObjectAttribute(
+VX_API_ENTRY vx_status VX_API_CALL vxSetUserDataObjectAttribute(
     vx_user_data_object user_data_object, vx_enum attribute, const void *ptr, vx_size size)
 {
     vx_status status = (vx_status)VX_SUCCESS;
@@ -366,8 +356,7 @@ VX_API_ENTRY vx_status vxSetUserDataObjectAttribute(
         obj_desc = (tivx_obj_desc_user_data_object_t *)user_data_object->base.obj_desc;
         switch (attribute)
         {
-            case VX_USER_DATA_OBJECT_VALID_SIZE:
-            case (vx_enum)TIVX_USER_DATA_OBJECT_VALID_SIZE:
+            case (vx_enum)VX_USER_DATA_OBJECT_VALID_SIZE:
                 if (VX_CHECK_PARAM(ptr, size, vx_size, 0x3U))
                 {
                     obj_desc->valid_mem_size = (vx_uint32)*(const vx_size *)ptr;

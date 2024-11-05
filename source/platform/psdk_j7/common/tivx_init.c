@@ -99,16 +99,14 @@ static void tivxInitLocal(void)
         tivxRegisterTutorialTargetKernels();
         #endif
     #endif
-    #endif
-
-    #if defined (SOC_J721S2) || defined (SOC_J784S4) || defined (SOC_AM62A) || defined (SOC_J722S)
+    #else
     #if defined (C7X_FAMILY)
         tivxRegisterOpenVXCoreTargetKernels();
         #ifdef BUILD_TUTORIAL
         tivxRegisterTutorialTargetKernels();
         #endif
     #endif
-    #endif
+    #endif /* defined(SOC_J721E) */
 
     #ifdef BUILD_CONFORMANCE_TEST
     #if defined (R5F)
@@ -116,16 +114,9 @@ static void tivxInitLocal(void)
         tivxRegisterTestKernelsTargetArmKernels();
     #endif
 
-    #if defined (SOC_J721E)
-    #if defined (C66)
+    #if defined (C7X_FAMILY) || defined (C66)
+        tivxRegisterCaptureTargetArmKernels();
         tivxRegisterTestKernelsTargetDspKernels();
-    #endif
-    #endif
-
-    #if defined (SOC_J721S2) || defined (SOC_J784S4) || defined (SOC_AM62A) || defined (SOC_J722S)
-    #if defined (C7X_FAMILY)
-        tivxRegisterTestKernelsTargetDspKernels();
-    #endif
     #endif
     #endif  /* #ifdef BUILD_CONFORMANCE_TEST */
 
@@ -141,10 +132,14 @@ static void tivxInitLocal(void)
 
 static void tivxDeInitLocal(void)
 {
-    if (0U != gInitCount)
+    if (0U != gInitCount) /* TIOVX-1949- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_INIT_UBR001 */
     {
         gInitCount--;
 
+#if defined(C7X_FAMILY) || defined(R5F) || defined(C66)
+/*LDRA_NOANALYSIS*/
+/* TIOVX-1759- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_HOST_ONLY_INIT_UM001 */
+#endif
         if (0U == gInitCount)
         {
             ownPlatformDeleteTargets();
@@ -157,16 +152,14 @@ static void tivxDeInitLocal(void)
             tivxUnRegisterTutorialTargetKernels();
             #endif
         #endif
-        #endif
-
-        #if defined (SOC_J721S2) || defined (SOC_J784S4) || defined (SOC_AM62A) || defined (SOC_J722S)
+        #else
         #if defined (C7X_FAMILY)
             tivxUnRegisterOpenVXCoreTargetKernels();
             #ifdef BUILD_TUTORIAL
             tivxUnRegisterTutorialTargetKernels();
             #endif
         #endif
-        #endif
+        #endif /* defined(SOC_J721E) */
 
         #ifdef BUILD_CONFORMANCE_TEST
         #if defined (R5F)
@@ -174,16 +167,9 @@ static void tivxDeInitLocal(void)
             tivxUnRegisterTestKernelsTargetArmKernels();
         #endif
 
-        #if defined (SOC_J721E)
-        #if defined (C66)
+        #if defined (C7X_FAMILY) || defined(C66)
+            tivxUnRegisterCaptureTargetArmKernels();
             tivxUnRegisterTestKernelsTargetDspKernels();
-        #endif
-        #endif
-
-        #if defined (SOC_J721S2) || defined (SOC_J784S4) || defined (SOC_AM62A) || defined (SOC_J722S)
-        #if defined (C7X_FAMILY)
-            tivxUnRegisterTestKernelsTargetDspKernels();
-        #endif
         #endif
         #endif  /* #ifdef BUILD_CONFORMANCE_TEST */
 
@@ -203,10 +189,17 @@ static void tivxDeInitLocal(void)
 
             VX_PRINT(VX_ZONE_INIT, "De-Initialization Done !!!\n");
         }
+#if defined(C7X_FAMILY) || defined(R5F) || defined(C66)
+/*LDRA_ANALYSIS*/
+/* END: TIOVX_CODE_COVERAGE_HOST_ONLY_INIT_UM001 */
+#endif
     }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1759- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_INIT_UM001 */
     else
     {
         /* ERROR. */
         VX_PRINT(VX_ZONE_ERROR, "De-Initialization Error !!!\n");
     }
+#endif
 }

@@ -60,8 +60,6 @@
 *
 */
 
-
-
 #include <vx_internal.h>
 
 static tivx_target_t g_target_table[TIVX_TARGET_MAX_TARGETS_IN_CPU];
@@ -70,7 +68,12 @@ own_execute_user_kernel_f      g_executeUserKernel_f = (own_execute_user_kernel_
 own_target_cmd_desc_handler_f  g_target_cmd_desc_handler_for_host_f = (own_target_cmd_desc_handler_f)NULL;
 
 static tivx_target ownTargetAllocHandle(vx_enum target_id);
+
+#ifdef HOST_ONLY
+/* TIOVX-1671- Host only Id: TIOVX_CODE_COVERAGE_HOST_ONLY_TARGET_UM007 */
 static void ownTargetFreeHandle(tivx_target *target_handle);
+#endif
+
 static vx_status ownTargetDequeueObjDesc(tivx_target target, uint16_t *obj_desc_id, uint32_t timeout);
 static tivx_target ownTargetGetHandle(vx_enum target_id);
 static void ownTargetNodeDescSendComplete(const tivx_obj_desc_node_t *node_obj_desc);
@@ -84,7 +87,10 @@ static vx_status ownTargetNodeDescNodeDelete(const tivx_obj_desc_node_t *node_ob
 static vx_status ownTargetNodeDescNodeControl(
     const tivx_obj_desc_cmd_t *cmd_obj_desc,
     const tivx_obj_desc_node_t *node_obj_desc);
+#ifdef HOST_ONLY
+/* TIOVX-1671- Host only Id: TIOVX_CODE_COVERAGE_HOST_ONLY_TARGET_UM001 */
 static void ownTargetCmdDescHandleAck(tivx_obj_desc_cmd_t *cmd_obj_desc);
+#endif
 static void ownTargetCmdDescSendAck(tivx_obj_desc_cmd_t *cmd_obj_desc, vx_status status);
 static void ownTargetCmdDescHandler(tivx_obj_desc_cmd_t *cmd_obj_desc);
 static void VX_CALLBACK ownTargetTaskMain(void *app_var);
@@ -126,16 +132,21 @@ static tivx_target ownTargetAllocHandle(vx_enum target_id)
     return target;
 }
 
+#ifdef HOST_ONLY
+/* TIOVX-1671- Host only Id: TIOVX_CODE_COVERAGE_HOST_ONLY_TARGET_UM007 */
 static void ownTargetFreeHandle(tivx_target *target_handle)
 {
-    if((NULL != target_handle) && (*target_handle!=NULL))
+    if((NULL != target_handle) && /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR001 */
+    (*target_handle!=NULL)) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR002 */
     {
         /* mark target handle as free */
         (*target_handle)->target_id = (vx_enum)TIVX_TARGET_ID_INVALID;
 
         *target_handle = NULL;
+        ownLogResourceFree("TIVX_TARGET_MAX_TARGETS_IN_CPU", 1);
     }
 }
+#endif
 
 static vx_status ownTargetDequeueObjDesc(tivx_target target, uint16_t *obj_desc_id, uint32_t timeout)
 {
@@ -147,7 +158,7 @@ static vx_status ownTargetDequeueObjDesc(tivx_target target, uint16_t *obj_desc_
     status = tivxQueueGet(&target->job_queue_handle,
                 &value, timeout);
 
-    if(status == (vx_status)VX_SUCCESS)
+    if(status == (vx_status)VX_SUCCESS) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR003 */
     {
         *obj_desc_id = (uint16_t)value;
     }
@@ -164,16 +175,11 @@ static tivx_target ownTargetGetHandle(vx_enum target_id)
     {
         tmp_target = &g_target_table[target_inst];
 
+        /* Target initialized with NULL, no need to reassign Target to NULL */
         if(tmp_target->target_id == target_id)
         {
             /* target id matches so return it */
-
             target = tmp_target;
-        }
-        else
-        {
-            /* target ID does not match so return NULL */
-            target = NULL;
         }
     }
 
@@ -192,11 +198,11 @@ static void ownTargetNodeDescSendComplete(
     {
         cmd_obj_desc_id = (uint16_t)node_obj_desc->node_complete_cmd_obj_desc_id;
 
-        if( (vx_enum)cmd_obj_desc_id != (vx_enum)TIVX_OBJ_DESC_INVALID)
+        if( (vx_enum)cmd_obj_desc_id != (vx_enum)TIVX_OBJ_DESC_INVALID) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR004 */
         {
             tivx_obj_desc_cmd_t *cmd_obj_desc = (tivx_obj_desc_cmd_t *)ownObjDescGet(cmd_obj_desc_id);
 
-            if( ownObjDescIsValidType( (tivx_obj_desc_t*)cmd_obj_desc, TIVX_OBJ_DESC_CMD) != 0)
+            if( ownObjDescIsValidType( (tivx_obj_desc_t*)cmd_obj_desc, TIVX_OBJ_DESC_CMD) != 0) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR005 */
             {
                 uint64_t timestamp = tivxPlatformGetTimeInUsecs()*1000U;
 
@@ -232,7 +238,7 @@ static vx_bool ownTargetNodeDescCanNodeExecute(
         prev_node_obj_desc_id = node_obj_desc->in_node_id[i];
         prev_node_obj_desc = (tivx_obj_desc_node_t*)ownObjDescGet(prev_node_obj_desc_id);
 
-        if( ownObjDescIsValidType( (tivx_obj_desc_t*)prev_node_obj_desc, TIVX_OBJ_DESC_NODE) != 0)
+        if( ownObjDescIsValidType( (tivx_obj_desc_t*)prev_node_obj_desc, TIVX_OBJ_DESC_NODE) != 0) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR006 */
         {
             if( tivxFlagIsBitSet(prev_node_obj_desc->flags,
                         TIVX_NODE_FLAG_IS_EXECUTED) == (vx_bool)vx_false_e)
@@ -260,11 +266,11 @@ static void ownTargetNodeDescTriggerNextNodes(
         next_node_obj_desc_id = node_obj_desc->out_node_id[i];
         next_node_obj_desc = (tivx_obj_desc_node_t*)ownObjDescGet(next_node_obj_desc_id);
 
-        if( ownObjDescIsValidType( (tivx_obj_desc_t*)next_node_obj_desc, TIVX_OBJ_DESC_NODE) != 0)
+        if( ownObjDescIsValidType( (tivx_obj_desc_t*)next_node_obj_desc, TIVX_OBJ_DESC_NODE) != 0) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR007 */
         {
             can_execute = ownTargetNodeDescCanNodeExecute(next_node_obj_desc);
 
-            if(can_execute == (vx_bool)vx_true_e)
+            if(can_execute == (vx_bool)vx_true_e) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR008 */
             {
                 /* error status check is not done
                  * as the return status is not used further
@@ -279,17 +285,20 @@ static void ownTargetNodeDescTriggerNextNodes(
 static void ownTargetNodeDescNodeExecuteKernel(
     tivx_obj_desc_node_t *node_obj_desc, uint16_t prm_obj_desc_id[])
 {
-    if( tivxFlagIsBitSet(node_obj_desc->flags,TIVX_NODE_FLAG_IS_TARGET_KERNEL) != 0)
+    if( tivxFlagIsBitSet(node_obj_desc->flags,TIVX_NODE_FLAG_IS_TARGET_KERNEL) != 0) /* TIOVX-1967- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_RTOS_TIVX_TARGET_UBR001 */
     {
         ownTargetNodeDescNodeExecuteTargetKernel(node_obj_desc, prm_obj_desc_id);
     }
+#ifdef HOST_ONLY
+/* TIOVX-1671- Host only Id: TIOVX_CODE_COVERAGE_HOST_ONLY_TARGET_UM002 */
     else
     {
-        if(NULL != g_executeUserKernel_f)
+        if(NULL != g_executeUserKernel_f) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR009 */
         {
             g_executeUserKernel_f(node_obj_desc, prm_obj_desc_id);
         }
     }
+#endif
 }
 
 static void ownTargetNodeDescNodeExecuteTargetKernel(
@@ -322,7 +331,7 @@ static void ownTargetNodeDescNodeExecuteTargetKernel(
             if((is_prm_replicated & ((uint32_t)1U << i)) != 0U)
             {
                 prm_obj_desc = ownObjDescGet(prm_obj_desc_id[i]);
-                if(prm_obj_desc != NULL)
+                if(prm_obj_desc != NULL) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR010 */
                 {
                     parent_obj_desc[i] = ownObjDescGet(
                         prm_obj_desc->scope_obj_desc_id);
@@ -341,7 +350,7 @@ static void ownTargetNodeDescNodeExecuteTargetKernel(
             params[i] = NULL;
             if((is_prm_replicated & ((uint32_t)1U << i)) != 0U)
             {
-                if(parent_obj_desc[i] != NULL)
+                if(parent_obj_desc[i] != NULL) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR011 */
                 {
                     if((vx_enum)parent_obj_desc[i]->type==(vx_enum)TIVX_OBJ_DESC_OBJARRAY)
                     {
@@ -350,16 +359,19 @@ static void ownTargetNodeDescNodeExecuteTargetKernel(
                                 obj_desc_id[cnt]);
                     }
                     else
-                    if((vx_enum)parent_obj_desc[i]->type==(vx_enum)TIVX_OBJ_DESC_PYRAMID)
+                    if((vx_enum)parent_obj_desc[i]->type==(vx_enum)TIVX_OBJ_DESC_PYRAMID) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR012 */
                     {
                         params[i] = ownObjDescGet(
                             ((tivx_obj_desc_pyramid_t*)parent_obj_desc[i])->
                                 obj_desc_id[cnt]);
                     }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1671- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_UM016 */
                     else
                     {
                         params[i] = NULL;
                     }
+#endif
                 }
             }
             else if((is_prm_array_element & ((uint32_t)1U << i)) != 0U)
@@ -378,7 +390,7 @@ static void ownTargetNodeDescNodeExecuteTargetKernel(
                      */
 
                     parent_obj_desc[i] = ownObjDescGet(prm_obj_desc_id[i]);
-                    if(parent_obj_desc[i] != NULL)
+                    if(parent_obj_desc[i] != NULL)  /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR013 */
                     {
                         if((vx_enum)parent_obj_desc[i]->type==(vx_enum)TIVX_OBJ_DESC_OBJARRAY)
                         {
@@ -386,7 +398,7 @@ static void ownTargetNodeDescNodeExecuteTargetKernel(
 
                             tmp_node_param = ownObjDescGet(node_obj_desc->data_id[i]);
 
-                            if (NULL != tmp_node_param)
+                            if (NULL != tmp_node_param)  /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR014 */
                             {
                                 params[i] = ownObjDescGet(
                                     ((tivx_obj_desc_object_array_t*)parent_obj_desc[i])->
@@ -400,7 +412,7 @@ static void ownTargetNodeDescNodeExecuteTargetKernel(
 
                             tmp_node_param = ownObjDescGet(node_obj_desc->data_id[i]);
 
-                            if (NULL != tmp_node_param)
+                            if (NULL != tmp_node_param)  /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR015 */
                             {
                                 params[i] = ownObjDescGet(
                                     ((tivx_obj_desc_pyramid_t*)parent_obj_desc[i])->
@@ -447,9 +459,9 @@ static void ownTargetNodeDescNodeExecuteTargetKernel(
 
                         tmp_node_param = ownObjDescGet(node_obj_desc->data_id[i]);
 
-                        if (NULL != tmp_node_param)
+                        if (NULL != tmp_node_param)  /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR016 */
                         {
-                            if (parent_obj_desc[i]->type == tmp_node_param->type)
+                            if (parent_obj_desc[i]->type == tmp_node_param->type)  /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR017 */
                             {
                                 params[i] = parent_obj_desc[i];
                             }
@@ -522,12 +534,12 @@ static void ownTargetNodeDescNodeExecuteTargetKernel(
 
                 prm_obj_desc = ownObjDescGet(params[i]->obj_desc_id);
 
-                if (prm_obj_desc != NULL)
+                if (prm_obj_desc != NULL)  /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR018 */
                 {
                     parent_obj_desc[i] = ownObjDescGet(
                         prm_obj_desc->scope_obj_desc_id);
 
-                    if(parent_obj_desc[i]!=NULL)
+                    if(parent_obj_desc[i]!=NULL)  /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR019 */
                     {
                         prm_obj_desc_id[i] = parent_obj_desc[i]->obj_desc_id;
                     }
@@ -563,15 +575,18 @@ static vx_bool ownTargetNodeDescIsPrevPipeNodeBlocked(tivx_obj_desc_node_t *node
             }
         }
         else
-        if(node_obj_desc->state == TIVX_NODE_OBJ_DESC_STATE_BLOCKED)
+        if(node_obj_desc->state == TIVX_NODE_OBJ_DESC_STATE_BLOCKED) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR020 */
         {
             /* this is trigger from prev node or due to resource being released so proceed with execution */
             node_obj_desc->state = TIVX_NODE_OBJ_DESC_STATE_IDLE;
         }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1671- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_UM006 */
         else
         {
             /* do nothing */
         }
+#endif
     }
     return is_prev_node_blocked;
 }
@@ -595,7 +610,7 @@ static void ownTargetNodeDescNodeExecute(tivx_target target, tivx_obj_desc_node_
     uint16_t prm_obj_desc_id[TIVX_KERNEL_MAX_PARAMS];
 
     /* if node is already executed do nothing */
-    if( tivxFlagIsBitSet(node_obj_desc->flags,TIVX_NODE_FLAG_IS_EXECUTED) == (vx_bool)vx_false_e )
+    if( tivxFlagIsBitSet(node_obj_desc->flags,TIVX_NODE_FLAG_IS_EXECUTED) == (vx_bool)vx_false_e ) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR021 */
     {
         /* check if same node in previous pipeline instance is blocked, if yes then
          * dont acquire parameters for this node
@@ -620,21 +635,25 @@ static void ownTargetNodeDescNodeExecute(tivx_target target, tivx_obj_desc_node_
                 (uint16_t)node_obj_desc->target_kernel_index[0], (vx_enum)node_obj_desc->kernel_id);
 
             /* Note: in the case of user kernel, target_kernel instance is NULL */
-            if( tivxFlagIsBitSet(node_obj_desc->flags,TIVX_NODE_FLAG_IS_TARGET_KERNEL) != 0)
+            if( tivxFlagIsBitSet(node_obj_desc->flags,TIVX_NODE_FLAG_IS_TARGET_KERNEL) != 0) /* TIOVX-1967- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_RTOS_TIVX_TARGET_UBR002 */
             {
-                if (NULL != target_kernel_instance)
+                if (NULL != target_kernel_instance) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR022 */
                 {
                     num_bufs = target_kernel_instance->kernel->num_pipeup_bufs;
 
                     kernel_instance_state = target_kernel_instance->state;
                 }
             }
+#ifdef HOST_ONLY
+/* TIOVX-1671- Host only Id: TIOVX_CODE_COVERAGE_HOST_ONLY_TARGET_UM005 */
             else
             {
+                /* This is applicable for the USER KERNEL*/
                 kernel_instance_state = (vx_enum)node_obj_desc->source_state;
 
                 num_bufs = node_obj_desc->num_pipeup_bufs;
             }
+#endif
 
             if ( ((vx_enum)VX_NODE_STATE_PIPEUP == kernel_instance_state) &&
                  (num_bufs > 1U) )
@@ -649,8 +668,8 @@ static void ownTargetNodeDescNodeExecute(tivx_target target, tivx_obj_desc_node_
 
                 node_obj_desc->source_state = (vx_enum)VX_NODE_STATE_STEADY;
 
-                if( (tivxFlagIsBitSet(node_obj_desc->flags,TIVX_NODE_FLAG_IS_TARGET_KERNEL) != (vx_bool)vx_false_e) &&
-                    (NULL != target_kernel_instance))
+                if( (tivxFlagIsBitSet(node_obj_desc->flags,TIVX_NODE_FLAG_IS_TARGET_KERNEL) != (vx_bool)vx_false_e) && /* TIOVX-1967- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_RTOS_TIVX_TARGET_UBR003 */
+                    (NULL != target_kernel_instance)) /* TIOVX-1967- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_RTOS_TIVX_TARGET_UBR004 */
                 {
                     target_kernel_instance->state = (vx_enum)VX_NODE_STATE_STEADY;
                 }
@@ -747,7 +766,7 @@ static vx_status ownTargetNodeDescNodeCreate(tivx_obj_desc_node_t *node_obj_desc
     }
 
     kernel_name_obj_desc = (tivx_obj_desc_kernel_name_t*)ownObjDescGet((uint16_t)node_obj_desc->kernel_name_obj_desc_id);
-    if(kernel_name_obj_desc!=NULL)
+    if(kernel_name_obj_desc!=NULL) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR023 */
     {
         kernel_name = kernel_name_obj_desc->kernel_name;
     }
@@ -756,12 +775,15 @@ static vx_status ownTargetNodeDescNodeCreate(tivx_obj_desc_node_t *node_obj_desc
         target_kernel_instance = ownTargetKernelInstanceAlloc(
             (vx_enum)node_obj_desc->kernel_id, kernel_name, (vx_enum)node_obj_desc->target_id);
 
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1671- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_UM011 */
         if(target_kernel_instance == NULL)
         {
             VX_PRINT(VX_ZONE_ERROR, "target_kernel_instance is NULL\n");
             status = (vx_status)VX_ERROR_NO_RESOURCES;
         }
         else
+#endif
         {
             /* This target_kernel_instance is newly allocated in this create function.  The "kernel"
              * in this case is a target_kernel which has not had num_pipeup_bufs set either
@@ -799,7 +821,7 @@ static vx_status ownTargetNodeDescNodeCreate(tivx_obj_desc_node_t *node_obj_desc
                 if((is_prm_replicated & ((uint32_t)1U << i)) != 0U)
                 {
                     prm_obj_desc = ownObjDescGet(node_obj_desc->data_id[i]);
-                    if(prm_obj_desc != NULL)
+                    if(prm_obj_desc != NULL) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR024 */
                     {
                         parent_obj_desc[i] = ownObjDescGet(
                             prm_obj_desc->scope_obj_desc_id);
@@ -812,7 +834,7 @@ static vx_status ownTargetNodeDescNodeCreate(tivx_obj_desc_node_t *node_obj_desc
                 params[i] = NULL;
                 if((is_prm_replicated & ((uint32_t)1U << i)) != 0U)
                 {
-                    if(parent_obj_desc[i] != NULL)
+                    if(parent_obj_desc[i] != NULL) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR025 */
                     {
                         if((vx_enum)parent_obj_desc[i]->type==(vx_enum)TIVX_OBJ_DESC_OBJARRAY)
                         {
@@ -821,16 +843,19 @@ static vx_status ownTargetNodeDescNodeCreate(tivx_obj_desc_node_t *node_obj_desc
                                     obj_desc_id[cnt]);
                         }
                         else
-                        if((vx_enum)parent_obj_desc[i]->type==(vx_enum)TIVX_OBJ_DESC_PYRAMID)
+                        if((vx_enum)parent_obj_desc[i]->type==(vx_enum)TIVX_OBJ_DESC_PYRAMID) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR026 */
                         {
                             params[i] = ownObjDescGet(
                                 ((tivx_obj_desc_pyramid_t*)parent_obj_desc[i])->
                                     obj_desc_id[cnt]);
                         }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1671- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_UM012 */
                         else
                         {
                             params[i] = NULL;
                         }
+#endif
                     }
                 }
                 else
@@ -879,6 +904,8 @@ static vx_status ownTargetNodeDescNodeCreate(tivx_obj_desc_node_t *node_obj_desc
             target_kernel_instance = ownTargetKernelInstanceGet(
                 (uint16_t)node_obj_desc->target_kernel_index[i], (vx_enum)node_obj_desc->kernel_id);
 
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1671- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_UM013 */
             if (NULL != target_kernel_instance)
             {
                 /* status check is not required
@@ -887,6 +914,7 @@ static vx_status ownTargetNodeDescNodeCreate(tivx_obj_desc_node_t *node_obj_desc
                  */
                 (void)ownTargetKernelInstanceFree(&target_kernel_instance);
             }
+#endif
         }
     }
 
@@ -911,12 +939,15 @@ static vx_status ownTargetNodeDescNodeDelete(const tivx_obj_desc_node_t *node_ob
         target_kernel_instance = ownTargetKernelInstanceGet(
             (uint16_t)node_obj_desc->target_kernel_index[cnt], (vx_enum)node_obj_desc->kernel_id);
 
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1671- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_UM014 */
         if(target_kernel_instance == NULL)
         {
             VX_PRINT(VX_ZONE_ERROR, "target_kernel_instance is NULL\n");
             status = (vx_status)VX_ERROR_INVALID_PARAMETERS;
         }
         else
+#endif
         {
             {
                 /* NOTE: nothing special for replicated node during
@@ -962,12 +993,15 @@ static vx_status ownTargetNodeSendCommand(const tivx_obj_desc_cmd_t *cmd_obj_des
     target_kernel_instance = ownTargetKernelInstanceGet(
         (uint16_t)node_obj_desc->target_kernel_index[node_id], (vx_enum)node_obj_desc->kernel_id);
 
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1671- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_UM001 */
     if(target_kernel_instance == NULL)
     {
         VX_PRINT(VX_ZONE_ERROR, "target_kernel_instance is NULL\n");
         status = (vx_status)VX_ERROR_INVALID_PARAMETERS;
     }
     else
+#endif
     {
         for(i=0; i<(int32_t)cmd_obj_desc->num_cmd_params; i++)
         {
@@ -995,19 +1029,24 @@ static vx_status ownTargetNodeDescNodeControl(
         loop_max = (uint16_t)node_obj_desc->num_of_replicas;
 
         if ((vx_enum)TIVX_CONTROL_CMD_SEND_TO_ALL_REPLICATED_NODES ==
-            cmd_obj_desc->replicated_node_idx)
+            cmd_obj_desc->replicated_node_idx) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR027 */
         {
             for (cnt = 0; cnt < loop_max; cnt ++)
             {
                 status = ownTargetNodeSendCommand(cmd_obj_desc, cnt,
                     node_obj_desc);
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1671- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_UM017 */
                 if ((vx_status)VX_SUCCESS != status)
                 {
                     VX_PRINT(VX_ZONE_ERROR, "SendCommand Failed\n");
                     break;
                 }
+#endif
             }
         }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1671- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_UM007 */
         else
         {
             /* Replicated node idx must be less than total replicated nodes. */
@@ -1027,23 +1066,29 @@ static vx_status ownTargetNodeDescNodeControl(
                 status = (vx_status)VX_FAILURE;
             }
         }
+#endif
     }
     else
     {
         /* For non-replicated node, ignore node-id field */
         status = ownTargetNodeSendCommand(cmd_obj_desc, 0U, node_obj_desc);
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1671- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_UM018 */
         if ((vx_status)VX_SUCCESS != status)
         {
             VX_PRINT(VX_ZONE_ERROR, "SendCommand Failed\n");
         }
+#endif
     }
 
     return status;
 }
 
+#ifdef HOST_ONLY
+/* TIOVX-1671- Host only Id: TIOVX_CODE_COVERAGE_HOST_ONLY_TARGET_UM001 */
 static void ownTargetCmdDescHandleAck(tivx_obj_desc_cmd_t *cmd_obj_desc)
 {
-    if( tivxFlagIsBitSet( cmd_obj_desc->flags, TIVX_CMD_FLAG_IS_ACK) != 0)
+    if( tivxFlagIsBitSet( cmd_obj_desc->flags, TIVX_CMD_FLAG_IS_ACK) != 0) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR028 */
     {
         tivxFlagBitClear( &cmd_obj_desc->flags, TIVX_CMD_FLAG_IS_ACK);
 
@@ -1054,10 +1099,11 @@ static void ownTargetCmdDescHandleAck(tivx_obj_desc_cmd_t *cmd_obj_desc)
        (void)tivxEventPost((tivx_event)(uintptr_t)cmd_obj_desc->ack_event_handle);
     }
 }
+#endif
 
 static void ownTargetCmdDescSendAck(tivx_obj_desc_cmd_t *cmd_obj_desc, vx_status status)
 {
-    if( tivxFlagIsBitSet( cmd_obj_desc->flags, TIVX_CMD_FLAG_SEND_ACK) != 0)
+    if( tivxFlagIsBitSet( cmd_obj_desc->flags, TIVX_CMD_FLAG_SEND_ACK) != 0) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR029 */
     {
         tivxFlagBitSet( &cmd_obj_desc->flags, TIVX_CMD_FLAG_IS_ACK);
 
@@ -1077,19 +1123,19 @@ static void ownTargetCmdDescHandler(tivx_obj_desc_cmd_t *cmd_obj_desc)
     tivx_obj_desc_node_t *node_obj_desc;
     vx_status status = (vx_status)VX_SUCCESS;
 
-    switch(cmd_obj_desc->cmd_id)
+    switch(cmd_obj_desc->cmd_id) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR030 */
     {
         case (vx_enum)TIVX_CMD_NODE_CREATE:
         case (vx_enum)TIVX_CMD_NODE_DELETE:
         case (vx_enum)TIVX_CMD_NODE_CONTROL:
-            if( tivxFlagIsBitSet( cmd_obj_desc->flags, TIVX_CMD_FLAG_IS_ACK) == (vx_bool)vx_false_e )
+            if( tivxFlagIsBitSet( cmd_obj_desc->flags, TIVX_CMD_FLAG_IS_ACK) == (vx_bool)vx_false_e ) /* TIOVX-1967- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_RTOS_TIVX_TARGET_UBR005 */
             {
                 node_obj_desc_id = cmd_obj_desc->obj_desc_id[0];
                 node_obj_desc = (tivx_obj_desc_node_t*)ownObjDescGet(node_obj_desc_id);
 
-                if( ownObjDescIsValidType( (tivx_obj_desc_t*)node_obj_desc, TIVX_OBJ_DESC_NODE) != 0)
+                if( ownObjDescIsValidType( (tivx_obj_desc_t*)node_obj_desc, TIVX_OBJ_DESC_NODE) != 0) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR031 */
                 {
-                    if( tivxFlagIsBitSet(node_obj_desc->flags,TIVX_NODE_FLAG_IS_TARGET_KERNEL) != 0)
+                    if( tivxFlagIsBitSet(node_obj_desc->flags,TIVX_NODE_FLAG_IS_TARGET_KERNEL) != 0) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR032 */
                     {
                         if((vx_enum)cmd_obj_desc->cmd_id == (vx_enum)TIVX_CMD_NODE_CREATE)
                         {
@@ -1101,29 +1147,40 @@ static void ownTargetCmdDescHandler(tivx_obj_desc_cmd_t *cmd_obj_desc)
                             status = ownTargetNodeDescNodeDelete(node_obj_desc);
                         }
                         else
-                        if((vx_enum)cmd_obj_desc->cmd_id == (vx_enum)TIVX_CMD_NODE_CONTROL)
+                        if((vx_enum)cmd_obj_desc->cmd_id == (vx_enum)TIVX_CMD_NODE_CONTROL) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR033 */
                         {
                             status = ownTargetNodeDescNodeControl(cmd_obj_desc, node_obj_desc);
                         }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1671- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_UM008 */
                         else
                         {
                             /* do nothing */
                         }
+#endif
                     }
                 }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1671- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_UM009 */
                 else
                 {
                     VX_PRINT(VX_ZONE_ERROR, "object descriptor type is invalid\n");
                     status = (vx_status)VX_ERROR_INVALID_PARAMETERS;
                 }
+#endif
                 ownTargetCmdDescSendAck(cmd_obj_desc, status);
             }
+#ifdef HOST_ONLY
+/* TIOVX-1671- Host only Id: TIOVX_CODE_COVERAGE_HOST_ONLY_TARGET_UM001 */
             else
             {
                 /* this is ACK for a previously sent command */
                 ownTargetCmdDescHandleAck(cmd_obj_desc);
             }
+#endif
             break;
+#ifdef HOST_ONLY
+/* TIOVX-1671- Host only Id: TIOVX_CODE_COVERAGE_HOST_ONLY_TARGET_UM008 */
         /* TIVX_CMD_NODE_USER_CALLBACK command is initated by the command sent from target via: \ref ownTargetNodeDescSendComplete()
            It is always executed on HOST target to check if there is any user callback, and if so executes it, otherwise, does nothing */
         case (vx_enum)TIVX_CMD_NODE_USER_CALLBACK:
@@ -1133,14 +1190,17 @@ static void ownTargetCmdDescHandler(tivx_obj_desc_cmd_t *cmd_obj_desc)
             /* These 2 commands are only executed on the "HOST" target, therefore using function pointer that is registered
                via ownRegisterFunctionsForHost(), which is called from tivxHostInit function, to avoid linking of symbols not needed
                on non-host CPUs */
-            if(NULL != g_target_cmd_desc_handler_for_host_f)
+            if(NULL != g_target_cmd_desc_handler_for_host_f) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR034 */
             {
                 g_target_cmd_desc_handler_for_host_f(cmd_obj_desc);
             }
             break;
+#endif
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1671- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_UM015 */
         default:
-
             break;
+#endif
     }
 
 }
@@ -1155,12 +1215,13 @@ static void VX_CALLBACK ownTargetTaskMain(void *app_var)
     /* Adding OS-specific task init functions */
     ownPlatformTaskInit();
 
-    while(target->targetExitRequest == (vx_bool)vx_false_e)
+    while(target->targetExitRequest == (vx_bool)vx_false_e) /* TIOVX-1967- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_RTOS_TIVX_TARGET_UBR006 */
     {
         status = ownTargetDequeueObjDesc(target,
                     &obj_desc_id, TIVX_EVENT_TIMEOUT_WAIT_FOREVER);
-
-        if(    (status != (vx_status)VX_SUCCESS)
+#ifdef HOST_ONLY
+/* TIOVX-1671- Host only Id: TIOVX_CODE_COVERAGE_HOST_ONLY_TARGET_UM009 */
+        if(    (status != (vx_status)VX_SUCCESS) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR035 */
             || ((vx_enum)obj_desc_id == (vx_enum)TIVX_OBJ_DESC_INVALID) )
         {
             /* in case of error, do nothing,
@@ -1169,33 +1230,40 @@ static void VX_CALLBACK ownTargetTaskMain(void *app_var)
              */
         }
         else
+#endif
         {
             obj_desc = ownObjDescGet(obj_desc_id);
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1671- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_UM010 */
             if(obj_desc == NULL)
             {
                 /* in valid obj_desc_id received */
             }
             else
+#endif
             {
                 ownLogRtTraceTargetExeStart(target, obj_desc);
 
-                switch(obj_desc->type)
+                switch(obj_desc->type) /* TIOVX-1967- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_RTOS_TIVX_TARGET_UBR007 */
                 {
                     case (vx_enum)TIVX_OBJ_DESC_CMD:
-                        if( ownObjDescIsValidType( obj_desc, TIVX_OBJ_DESC_CMD) != 0)
+                        if( ownObjDescIsValidType( obj_desc, TIVX_OBJ_DESC_CMD) != 0) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR036 */
                         {
                             ownTargetCmdDescHandler((tivx_obj_desc_cmd_t*)obj_desc);
                         }
                         break;
                     case (vx_enum)TIVX_OBJ_DESC_NODE:
-                        if( ownObjDescIsValidType( obj_desc, TIVX_OBJ_DESC_NODE) != 0)
+                        if( ownObjDescIsValidType( obj_desc, TIVX_OBJ_DESC_NODE) != 0) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR037 */
                         {
                             ownTargetNodeDescNodeExecute(target, (tivx_obj_desc_node_t*)obj_desc);
                         }
                         break;
+#ifdef HOST_ONLY
+/* TIOVX-1671- Host only Id: TIOVX_CODE_COVERAGE_HOST_ONLY_TARGET_UM006 */
                     default:
                         /* unsupported obj_desc received at target */
                         break;
+#endif
                 }
 
                 ownLogRtTraceTargetExeEnd(target, obj_desc);
@@ -1203,7 +1271,10 @@ static void VX_CALLBACK ownTargetTaskMain(void *app_var)
         }
     }
 
+#ifdef HOST_ONLY
+/* TIOVX-1671- Host only Id: TIOVX_CODE_COVERAGE_HOST_ONLY_TARGET_UM010 */
     target->targetExitDone = (vx_bool)vx_true_e;
+#endif
 }
 
 vx_status ownTargetCreate(vx_enum target_id, const tivx_target_create_params_t *params)
@@ -1241,10 +1312,12 @@ vx_status ownTargetCreate(vx_enum target_id, const tivx_target_create_params_t *
                         target->job_queue_memory,
                         TIVX_QUEUE_FLAG_BLOCK_ON_GET);
 
-        if(status == (vx_status)VX_SUCCESS)
+        if(status == (vx_status)VX_SUCCESS) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR038 */
         {
             /* create and start target task */
             status = tivxTaskCreate(&target->task_handle, &target->task_params);
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1671- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_UM002 */
             if(status != (vx_status)VX_SUCCESS)
             {
                 /* error status check is not done
@@ -1253,12 +1326,19 @@ vx_status ownTargetCreate(vx_enum target_id, const tivx_target_create_params_t *
                  */
                 (void)tivxQueueDelete(&target->job_queue_handle);
             }
+#endif
         }
 
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1671- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_UM003 */
         if (status != (vx_status)VX_SUCCESS)
         {
+#ifdef HOST_ONLY
+/* TIOVX-1671- Host only Id: TIOVX_CODE_COVERAGE_HOST_ONLY_TARGET_UM007 */
             ownTargetFreeHandle(&target);
+#endif
         }
+#endif
     }
     return status;
 }
@@ -1271,7 +1351,8 @@ vx_status ownTargetDelete(vx_enum target_id)
     target = ownTargetGetHandle(target_id);
 
     /* delete task */
-
+#ifdef HOST_ONLY
+/* TIOVX-1671- Host only Id: TIOVX_CODE_COVERAGE_HOST_ONLY_TARGET_UM003 */
     if (NULL != target)
     {
         /* set flag to break target from main loop */
@@ -1279,7 +1360,7 @@ vx_status ownTargetDelete(vx_enum target_id)
 
         /* queue a invalid object descriptor to unblock queue wait */
         status = ownTargetQueueObjDesc(target_id, (vx_enum)TIVX_OBJ_DESC_INVALID);
-        if((vx_status)VX_SUCCESS == status)
+        if((vx_status)VX_SUCCESS == status) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR039 */
         {
             /* wait until target exit is done */
             while(target->targetExitDone==(vx_bool)vx_false_e)
@@ -1296,7 +1377,15 @@ vx_status ownTargetDelete(vx_enum target_id)
              * handled in ownTargetQueueObjDesc status check
              */
             (void)tivxQueueDelete(&target->job_queue_handle);
+
+            ownTargetFreeHandle(&target);
         }
+    }
+    else
+#endif
+    {
+        VX_PRINT(VX_ZONE_ERROR, "Target delete failed due to invalid target ID\n");
+        status = (vx_status)VX_ERROR_INVALID_VALUE;
     }
 
     return status;
@@ -1327,6 +1416,8 @@ vx_status ownTargetQueueObjDesc(vx_enum target_id, uint16_t obj_desc_id)
         status = tivxQueuePut(&target->job_queue_handle,
                 (uintptr_t)obj_desc_id, TIVX_EVENT_TIMEOUT_NO_WAIT);
 
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1671- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_UM004 */
         if((vx_status)VX_SUCCESS != status)
         {
             VX_PRINT(VX_ZONE_ERROR,"***************************************************************************************************\n");
@@ -1334,6 +1425,7 @@ vx_status ownTargetQueueObjDesc(vx_enum target_id, uint16_t obj_desc_id)
             VX_PRINT(VX_ZONE_ERROR,"May need to increase the value of TIVX_TARGET_MAX_JOB_QUEUE_DEPTH in tiovx/include/TI/tivx_config.h\n");
             VX_PRINT(VX_ZONE_ERROR,"***************************************************************************************************\n");
         }
+#endif
     }
     else
     {
@@ -1379,30 +1471,39 @@ void ownTargetInit(void)
     (void)ownTargetKernelInstanceInit();
 }
 
+#if defined(C7X_FAMILY) || defined(R5F) || defined(C66)
+/*LDRA_NOANALYSIS*/
+/* TIOVX-1671- Host only Id: TIOVX_CODE_COVERAGE_HOST_ONLY_TARGET_UM004 */
+#endif
 void ownTargetDeInit(void)
 {
     ownTargetKernelInstanceDeInit();
     ownTargetKernelDeInit();
 
 }
+#if defined(C7X_FAMILY) || defined(R5F) || defined(C66)
+/* END: TIOVX_CODE_COVERAGE_HOST_ONLY_TARGET_UM004 */
+/*LDRA_ANALYSIS*/
+#endif
 
 void ownTargetSetTimestamp(
     const tivx_obj_desc_node_t *node_obj_desc, tivx_obj_desc_t *obj_desc[])
 {
     uint16_t prm_id;
     uint64_t timestamp = 0, obj_timestamp = 0;
-    uint32_t is_prm_input_flag;
+    uint32_t is_prm_input_flag, is_prm_bidi_flag;
     tivx_obj_desc_t *parent_obj_desc;
 
     is_prm_input_flag = node_obj_desc->is_prm_input;
+    is_prm_bidi_flag  = node_obj_desc->is_prm_bidi;
 
     /* Reading all input timestamps, taking the most recent of the timestamps to pass along */
     for (prm_id = 0U; prm_id < node_obj_desc->num_params; prm_id++)
     {
-        if (NULL != obj_desc[prm_id])
+        if (NULL != obj_desc[prm_id]) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR040 */
         {
            if ((tivxFlagIsBitSet(is_prm_input_flag, ((uint32_t)1U<<prm_id))==(vx_bool)vx_true_e) ||
-                (tivxFlagIsBitSet(is_prm_input_flag, ((uint32_t)TIVX_OBJ_DESC_BIDIR_FLAG<<prm_id))==(vx_bool)vx_true_e))
+                (tivxFlagIsBitSet(is_prm_bidi_flag, ((uint32_t)1U<<prm_id))==(vx_bool)vx_true_e))
             {
                 obj_timestamp = obj_desc[prm_id]->timestamp;
 
@@ -1417,7 +1518,7 @@ void ownTargetSetTimestamp(
     /* Setting all outputs to use most recent of the timestamps */
     for (prm_id = 0U; prm_id < node_obj_desc->num_params; prm_id++)
     {
-        if (NULL != obj_desc[prm_id])
+        if (NULL != obj_desc[prm_id]) /* TIOVX-1930- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_TARGET_UBR041 */
         {
             if (tivxFlagIsBitSet(is_prm_input_flag, ((uint32_t)1U<<prm_id)) == (vx_bool)vx_false_e)
             {

@@ -75,6 +75,7 @@ TEST(tivxInternalContext, negativeTestContextLock)
     vxAddLogEntry((vx_reference)dist1, VX_FAILURE, "hello world", 1, 2, 3);
 
     context->lock = lock1;
+    context->log_lock = lock2;
     dist=dist1;
     VX_CALL(vxReleaseDistribution(&dist));
     VX_CALL(vxRemoveKernel(kernel));
@@ -153,6 +154,8 @@ TEST(tivxInternalContext, negativeTestOwnAddReferenceToContext1)
     vx_image image;
 
     ASSERT_VX_OBJECT(image = vxCreateImage(context, width, height, VX_DF_IMAGE_RGB), VX_TYPE_IMAGE);
+
+    ASSERT((vx_bool)vx_false_e == ownAddReferenceToContext(NULL, (vx_reference)image));
 
     /* Manually setting the magic parameter to BAD, so that the vxSetReferenceName fails */
     image->base.magic = TIVX_BAD_MAGIC;
@@ -267,6 +270,28 @@ TEST(tivxInternalContext, negativeTestOwnRemoveKernelFromContext)
     VX_CALL(vxRemoveKernel(kernel));
 }
 
+TEST(tivxInternalContext, negativeTestNullContextAndMisc)
+{
+    vx_context context = context_->vx_context_;
+    vx_uint32 i = 0;
+
+    ASSERT(vx_false_e == ownRemoveReferenceFromContext(NULL, NULL));
+    ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_PARAMETERS, ownContextSendControlCmd(NULL, 0, 0, 0, 0, 0, 0, 0));
+    ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_PARAMETERS, ownContextSendControlCmd(context, 0, 0, 0, 0, 0, TIVX_CMD_MAX_OBJ_DESCS, 0));
+    ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_PARAMETERS, ownContextSendCmd(NULL, 0, 0, 0, 0, 0));
+    ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_PARAMETERS, ownContextSendCmd(context, 0, 0, TIVX_CMD_MAX_OBJ_DESCS, 0, 0));
+
+    uintptr_t obj_id;
+    VX_CALL(tivxQueueGet(&context->free_queue, &obj_id, TIVX_EVENT_TIMEOUT_WAIT_FOREVER));
+    for (i=0; i<=TIVX_MAX_CTRL_CMD_OBJECTS; i++)
+    {
+        VX_CALL(tivxQueuePut(&context->free_queue, TIVX_MAX_CTRL_CMD_OBJECTS, TIVX_EVENT_TIMEOUT_WAIT_FOREVER));
+        VX_CALL(tivxQueueGet(&context->free_queue, &obj_id, TIVX_EVENT_TIMEOUT_WAIT_FOREVER));
+    }
+    ASSERT_EQ_VX_STATUS(VX_FAILURE, ownContextSendControlCmd(context, 0, 0, 0, 0, 0, 0, 0));
+    ASSERT_EQ_VX_STATUS(VX_FAILURE, ownContextSendCmd(context, 0, 0, 0, 0, 0));
+}
+
 TESTCASE_TESTS(
     tivxInternalContext,
     negativeTestContextLock,
@@ -275,5 +300,6 @@ TESTCASE_TESTS(
     negativeTestOwnAddReferenceToContext1,
     negativeTestOwnAddKernelToContext,
     negativeTestOwnIsKernelInContext,
-    negativeTestOwnRemoveKernelFromContext
+    negativeTestOwnRemoveKernelFromContext,
+    negativeTestNullContextAndMisc
 )

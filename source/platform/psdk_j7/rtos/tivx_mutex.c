@@ -60,12 +60,15 @@ vx_status tivxMutexDelete(tivx_mutex *mutex)
     {
         handle = (tivx_mutex)*mutex;
         retVal = appRtosSemaphoreDelete(&handle);
-
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1773- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_RTOS_MUTEX_UM001 */
         if (APP_RTOS_STATUS_SUCCESS != retVal)
         {
             VX_PRINT(VX_ZONE_ERROR, "Semaphore delete returned an error\n");
         }
         else
+
+#endif
         {
             *mutex = NULL;
             status = (vx_status)VX_SUCCESS;
@@ -85,16 +88,19 @@ vx_status tivxMutexLock(tivx_mutex mutex)
         retVal = appRtosSemaphorePend((app_rtos_semaphore_handle_t)mutex,
             APP_RTOS_SEMAPHORE_WAIT_FOREVER);
 
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1773- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_RTOS_MUTEX_UM002 */
         if (APP_RTOS_STATUS_SUCCESS != retVal)
         {
             VX_PRINT(VX_ZONE_ERROR, "Semaphore wait failed\n");
             status = (vx_status)VX_FAILURE;
         }
+#endif
     }
     else
     {
         VX_PRINT(VX_ZONE_ERROR, "Mutex is NULL\n");
-        status = (vx_status)VX_FAILURE;
+        status = (vx_status)VX_ERROR_INVALID_PARAMETERS;
     }
 
     return (status);
@@ -103,16 +109,15 @@ vx_status tivxMutexLock(tivx_mutex mutex)
 vx_status tivxMutexUnlock(tivx_mutex mutex)
 {
     vx_status status = (vx_status)VX_SUCCESS;
-    app_rtos_status_t retVal;
 
     if (NULL != mutex)
     {
-        retVal = appRtosSemaphorePost((app_rtos_semaphore_handle_t)mutex);
-        if (APP_RTOS_STATUS_SUCCESS != retVal)
-        {
-            VX_PRINT(VX_ZONE_ERROR, "Semaphore post returned an error\n");
-            status = (vx_status)VX_FAILURE;
-        }
+        (void)appRtosSemaphorePost((app_rtos_semaphore_handle_t)mutex);
+    }
+    else
+    {
+        VX_PRINT(VX_ZONE_ERROR, "Mutex is NULL\n");
+        status = (vx_status)VX_ERROR_INVALID_PARAMETERS;
     }
 
     return (status);

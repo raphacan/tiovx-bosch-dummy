@@ -22,7 +22,7 @@ static void tivxIpcHandler(uint32_t src_cpu_id, uint32_t payload);
  * \ingroup group_tivx_ipc
  */
 #if defined (SOC_J721E)
-static uint32_t g_ipc_cpu_id_map[TIVX_CPU_ID_MAX] = {
+uint32_t g_ipc_cpu_id_map[TIVX_CPU_ID_MAX] = {
     APP_IPC_CPU_C6x_1,
     APP_IPC_CPU_C6x_2,
     APP_IPC_CPU_C7x_1,
@@ -35,7 +35,7 @@ static uint32_t g_ipc_cpu_id_map[TIVX_CPU_ID_MAX] = {
 #endif
 
 #if defined (SOC_J721S2)
-static uint32_t g_ipc_cpu_id_map[TIVX_CPU_ID_MAX] = {
+uint32_t g_ipc_cpu_id_map[TIVX_CPU_ID_MAX] = {
     APP_IPC_CPU_C7x_2,
     APP_IPC_CPU_C7x_1,
     APP_IPC_CPU_MCU2_0, /* in j721s2, TIOVX CPU IPU1-0 is mapped to vision_apps/pdk CPU mcu2-0 */
@@ -47,7 +47,7 @@ static uint32_t g_ipc_cpu_id_map[TIVX_CPU_ID_MAX] = {
 #endif
 
 #if defined (SOC_J784S4)
-static uint32_t g_ipc_cpu_id_map[TIVX_CPU_ID_MAX] = {
+uint32_t g_ipc_cpu_id_map[TIVX_CPU_ID_MAX] = {
     APP_IPC_CPU_C7x_2,
     APP_IPC_CPU_C7x_1,
     APP_IPC_CPU_MCU2_0, /* in j784s4, TIOVX CPU IPU1-0 is mapped to vision_apps/pdk CPU mcu2-0 */
@@ -63,7 +63,7 @@ static uint32_t g_ipc_cpu_id_map[TIVX_CPU_ID_MAX] = {
 #endif
 
 #if defined (SOC_AM62A)
-static uint32_t g_ipc_cpu_id_map[TIVX_CPU_ID_MAX] = {
+uint32_t g_ipc_cpu_id_map[TIVX_CPU_ID_MAX] = {
     APP_IPC_CPU_C7x_1,
     APP_IPC_CPU_MCU1_0, /* in am62a, TIOVX CPU IPU1-0 is mapped to vision_apps/pdk CPU mcu1-0 */
     APP_IPC_CPU_MPU1_0
@@ -71,11 +71,27 @@ static uint32_t g_ipc_cpu_id_map[TIVX_CPU_ID_MAX] = {
 #endif
 
 #if defined (SOC_J722S)
-static uint32_t g_ipc_cpu_id_map[TIVX_CPU_ID_MAX] = {
+uint32_t g_ipc_cpu_id_map[TIVX_CPU_ID_MAX] = {
     APP_IPC_CPU_C7x_1,
     APP_IPC_CPU_C7x_2,
+    APP_IPC_CPU_MCU1_0,
     APP_IPC_CPU_MCU2_0,
     APP_IPC_CPU_MPU1_0
+};
+#endif
+
+#if defined (SOC_J742S2)
+uint32_t g_ipc_cpu_id_map[TIVX_CPU_ID_MAX] = {
+    APP_IPC_CPU_C7x_2,
+    APP_IPC_CPU_C7x_1,
+    APP_IPC_CPU_MCU2_0, /* in j742s2, TIOVX CPU IPU1-0 is mapped to vision_apps/pdk CPU mcu2-0 */
+    APP_IPC_CPU_MCU2_1, /* in j742s2, TIOVX CPU IPU1-1 is mapped to vision_apps/pdk CPU mcu2-1 */
+    APP_IPC_CPU_MPU1_0,
+    APP_IPC_CPU_MCU3_0,
+    APP_IPC_CPU_MCU3_1,
+    APP_IPC_CPU_MCU4_0,
+    APP_IPC_CPU_MCU4_1,
+    APP_IPC_CPU_C7x_3
 };
 #endif
 
@@ -91,7 +107,7 @@ static tivx_ipc_handler_f g_ipc_handler = NULL;
  */
 static void tivxIpcHandler(uint32_t src_cpu_id, uint32_t payload)
 {
-    if (NULL != g_ipc_handler)
+    if (NULL != g_ipc_handler) /* TIOVX-1948- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_IPC_UBR001 */
     {
         g_ipc_handler(payload);
     }
@@ -157,7 +173,7 @@ vx_enum tivxGetSelfCpuId(void)
 
     vsdk_cpu_id =  appIpcGetSelfCpuId();
 
-    for (i = 0; i < dimof(g_ipc_cpu_id_map); i ++)
+    for (i = 0; i < dimof(g_ipc_cpu_id_map); i ++) /* TIOVX-1948- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_IPC_UBR002 */
     {
         if (vsdk_cpu_id == g_ipc_cpu_id_map[i])
         {
@@ -179,10 +195,7 @@ uint16_t ownIpcGetHostPortId(uint16_t cpu_id)
     {
         vsdk_cpu_id  = g_ipc_cpu_id_map[cpu_id];
 
-        if(vsdk_cpu_id != APP_IPC_CPU_INVALID )
-        {
-            host_port_id = appIpcGetHostPortId((uint16_t)vsdk_cpu_id);
-        }
+        host_port_id = appIpcGetHostPortId((uint16_t)vsdk_cpu_id);
     }
 
     /* host port ID is 16b max to this type conversion is ok */
@@ -195,10 +208,26 @@ void ownIpcInit(void)
     (void)appIpcRegisterNotifyHandler(tivxIpcHandler);
 }
 
+#if defined(C7X_FAMILY) || defined(R5F) || defined(C66)
+/*LDRA_NOANALYSIS*/
+/* TIOVX-1771- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_HOST_ONLY_IPC_UM001 */
+#endif
 void ownIpcDeInit(void)
 {
     /* Un-Register IPC Handler */
     (void)appIpcRegisterNotifyHandler(NULL);
+}
+#if defined(C7X_FAMILY) || defined(R5F) || defined(C66)
+/*LDRA_ANALYSIS*/
+/* END: TIOVX_CODE_COVERAGE_HOST_ONLY_IPC_UM001 */
+#endif
+
+vx_bool ownIsCpuEnabled(uint32_t app_cpu_id)
+{
+    uint32_t vsdk_cpu_id;
+
+    vsdk_cpu_id = app_cpu_id;
+    return (vx_bool)appIpcIsCpuEnabled(vsdk_cpu_id);
 }
 
 vx_bool tivxIsTargetEnabled(const char target_name[])
@@ -216,20 +245,23 @@ vx_bool tivxIsTargetEnabled(const char target_name[])
         if (target_id != (vx_enum)TIVX_TARGET_ID_INVALID)
         {
             cpu_id = ownTargetGetCpuId(target_id);
-            if( cpu_id < (vx_enum)TIVX_CPU_ID_MAX)
+            if( cpu_id < (vx_enum)TIVX_CPU_ID_MAX) /* TIOVX-1948- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_IPC_UBR004 */
             {
                 vsdk_cpu_id  = g_ipc_cpu_id_map[cpu_id];
 
                 vsdk_isenabled = appIpcIsCpuEnabled(vsdk_cpu_id);
 
-                if (1U == vsdk_isenabled)
+                if (1U == vsdk_isenabled) /* TIOVX-1948- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_IPC_UBR005 */
                 {
                     isEnabled = (vx_bool)vx_true_e;
                 }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1771- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_IPC_UM001 */
                 else
                 {
                     isEnabled = (vx_bool)vx_false_e;
                 }
+#endif
             }
         }
     }

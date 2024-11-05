@@ -128,10 +128,13 @@ static vx_status VX_CALLBACK pyramidKernelCallback(vx_enum kernel_enum, vx_bool 
                     }
                 }
             }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1884- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_PYRAMID_UM007 */
             else
             {
                 status = (vx_status)VX_ERROR_NOT_SUPPORTED;
             }
+#endif
         }
     }
     return status;
@@ -221,10 +224,8 @@ VX_API_ENTRY vx_pyramid VX_API_CALL vxCreatePyramid(
                     (vx_enum)TIVX_OBJ_DESC_PYRAMID, vxCastRefFromPyramid(prmd));
                 if(obj_desc==NULL)
                 {
-                    if((vx_status)VX_SUCCESS != vxReleasePyramid(&prmd))
-                    {
-                        VX_PRINT(VX_ZONE_ERROR,"Failed to release reference to pyramid object\n");
-                    }
+                    (void)vxReleasePyramid(&prmd);
+
                     vxAddLogEntry(&context->base, (vx_status)VX_ERROR_NO_RESOURCES,
                         "Could not allocate prmd object descriptor\n");
                     prmd = (vx_pyramid)ownGetErrorObject(
@@ -250,10 +251,7 @@ VX_API_ENTRY vx_pyramid VX_API_CALL vxCreatePyramid(
                     
                     if ((vx_status)VX_SUCCESS != status)
                     {
-                        if((vx_status)VX_SUCCESS != vxReleasePyramid(&prmd))
-                        {
-                            VX_PRINT(VX_ZONE_ERROR,"Failed to release reference to pyramid object\n");
-                        }
+                        (void)vxReleasePyramid(&prmd);
                     }
                 }
             }
@@ -287,12 +285,13 @@ VX_API_ENTRY vx_image VX_API_CALL vxGetPyramidLevel(vx_pyramid prmd, vx_uint32 i
     }
     else
     {
-        if ((ownIsValidSpecificReference(vxCastRefFromPyramid(prmd), (vx_enum)VX_TYPE_PYRAMID) ==
-                (vx_bool)vx_true_e) &&
-             (prmd->base.obj_desc != NULL) &&
-             (index < ((tivx_obj_desc_pyramid_t *)prmd->base.obj_desc)->num_levels) &&
-             ((NULL != prmd->img[0]) ||
-              ((vx_status)VX_SUCCESS == ownInitPyramid(prmd))))
+        if ((ownIsValidSpecificReference(vxCastRefFromPyramid(prmd),
+            (vx_enum)VX_TYPE_PYRAMID) == (vx_bool)vx_true_e) && /* TIOVX-1894- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_PYRAMID_UBR001 */
+            (prmd->base.obj_desc != NULL) &&
+            (index < ((tivx_obj_desc_pyramid_t *)prmd->base.obj_desc)->num_levels) &&
+            ((NULL != prmd->img[0]) ||
+                ((vx_status)VX_SUCCESS == ownInitPyramid(prmd))))
+ 
         {
             img = prmd->img[index];
 
@@ -355,10 +354,7 @@ VX_API_ENTRY vx_pyramid VX_API_CALL vxCreateVirtualPyramid(
                 (vx_enum)TIVX_OBJ_DESC_PYRAMID, vxCastRefFromPyramid(prmd));
             if(obj_desc==NULL)
             {
-                if((vx_status)VX_SUCCESS != vxReleasePyramid(&prmd))
-                {
-                    VX_PRINT(VX_ZONE_ERROR,"Failed to release reference to pyramid object\n");
-                }
+                (void)vxReleasePyramid(&prmd);
 
                 vxAddLogEntry(&context->base, (vx_status)VX_ERROR_NO_RESOURCES,
                     "Could not allocate prmd object descriptor\n");
@@ -519,18 +515,19 @@ static vx_status ownAllocPyramidBuffer(vx_reference ref)
     tivx_obj_desc_pyramid_t *obj_desc = NULL;
     vx_image img;
 
-    if(ref->type == (vx_enum)VX_TYPE_PYRAMID)
+    if(ref->type == (vx_enum)VX_TYPE_PYRAMID) /* TIOVX-1894- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_PYRAMID_UBR002 */
     {
         /* status set to NULL due to preceding type check */
         vx_pyramid prmd = vxCastRefAsPyramid(ref, NULL);
-        if(prmd->base.obj_desc != NULL)
+        if(prmd->base.obj_desc != NULL) /* TIOVX-1894- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_PYRAMID_UBR003 */
         {
             obj_desc = (tivx_obj_desc_pyramid_t *)prmd->base.obj_desc;
             for (i = 0u; i < obj_desc->num_levels; i++)
             {
                 img = prmd->img[i];
 
-                if ((NULL != img) && (NULL != img->base.mem_alloc_callback))
+                if ((NULL != img) && /* TIOVX-1894- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_PYRAMID_UBR004 */
+                (NULL != img->base.mem_alloc_callback)) /* TIOVX-1894- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_PYRAMID_UBR005 */
                 {
                     status = img->base.mem_alloc_callback(vxCastRefFromImage(img));
 
@@ -539,11 +536,14 @@ static vx_status ownAllocPyramidBuffer(vx_reference ref)
                         break;
                     }
                 }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1884- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_PYRAMID_UM004 */
                 else
                 {
                     VX_PRINT(VX_ZONE_ERROR, "Image level %d is NULL\n", i);
                     status = (vx_status)VX_ERROR_INVALID_VALUE;
                 }
+#endif
             }
 
             if ((vx_status)VX_SUCCESS==status)
@@ -551,17 +551,23 @@ static vx_status ownAllocPyramidBuffer(vx_reference ref)
                 ref->is_allocated = (vx_bool)vx_true_e;
             }
         }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1884- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_PYRAMID_UM001 */
         else
         {
             VX_PRINT(VX_ZONE_ERROR, "Pyramid base object descriptor is NULL\n");
             status = (vx_status)VX_ERROR_INVALID_VALUE;
         }
+#endif
     }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1884- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_PYRAMID_UM002 */
     else
     {
         VX_PRINT(VX_ZONE_ERROR, "Reference type is not pyramid\n");
         status = (vx_status)VX_ERROR_INVALID_REFERENCE;
     }
+#endif
 
     return status;
 }
@@ -572,51 +578,54 @@ static vx_status ownDestructPyramid(vx_reference ref)
     vx_uint32 i = 0;
     tivx_obj_desc_pyramid_t *obj_desc = NULL;
 
-    if(ref->type == (vx_enum)VX_TYPE_PYRAMID)
+    /* status check set to NULL due to guaranteed type in internal function */
+    vx_pyramid prmd = vxCastRefAsPyramid(ref, NULL);
+
+    obj_desc = (tivx_obj_desc_pyramid_t *)prmd->base.obj_desc;
+    if(obj_desc == NULL)
     {
-        /* status set to NULL due to preceding type check */
-        vx_pyramid prmd = vxCastRefAsPyramid(ref, NULL);
+        status = (vx_status)VX_ERROR_INVALID_REFERENCE;
+        VX_PRINT(VX_ZONE_ERROR, "Object descriptor is NULL!\n");
+    }
+    else
+    {
 
-        obj_desc = (tivx_obj_desc_pyramid_t *)prmd->base.obj_desc;
-        if(obj_desc == NULL)
+        for (i = 0; i < obj_desc->num_levels; i++)
         {
-            status = (vx_status)VX_ERROR_INVALID_REFERENCE;
-            VX_PRINT(VX_ZONE_ERROR, "Object descriptor is NULL!\n");
-        }
-        else
-        {
-
-            for (i = 0; i < obj_desc->num_levels; i++)
+            if ((NULL != prmd->img[i]) &&
+                (vxGetStatus(vxCastRefFromImage(prmd->img[i])) == (vx_status)VX_SUCCESS))
             {
-                if ((NULL != prmd->img[i]) &&
-                    (vxGetStatus(vxCastRefFromImage(prmd->img[i])) == (vx_status)VX_SUCCESS))
-                {
-                    /* decrement the internal counter on the image, not the
-                    * external one. Setting it as void since return value
-                    * 'count' is not used further.
-                    */
-                    (void)ownDecrementReference(vxCastRefFromImage(prmd->img[i]), (vx_enum)VX_INTERNAL);
+                /* decrement the internal counter on the image, not the
+                * external one. Setting it as void since return value
+                * 'count' is not used further.
+                */
+                (void)ownDecrementReference(vxCastRefFromImage(prmd->img[i]), (vx_enum)VX_INTERNAL);
 
-                    status = ownReleaseReferenceInt(vxCastRefFromImageP(&prmd->img[i]),
-                            (vx_enum)VX_TYPE_IMAGE, (vx_enum)VX_EXTERNAL, NULL);
-                    if ((vx_status)VX_SUCCESS != status)
-                    {
-                        VX_PRINT(VX_ZONE_ERROR, "Pyramid level %d release failed\n", i);
-                        break;
-                    }
-                }
-            }
-        }
-        if(prmd->base.type == (vx_enum)VX_TYPE_PYRAMID)
-        {
-            if(prmd->base.obj_desc!=NULL)
-            {
-                status = ownObjDescFree((tivx_obj_desc_t**)&prmd->base.obj_desc);
+                status = ownReleaseReferenceInt(vxCastRefFromImageP(&prmd->img[i]),
+                        (vx_enum)VX_TYPE_IMAGE, (vx_enum)VX_EXTERNAL, NULL);
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1884- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_PYRAMID_UM003 */
                 if ((vx_status)VX_SUCCESS != status)
                 {
-                    VX_PRINT(VX_ZONE_ERROR, "Pyramid object descriptor free failed\n");
+                    VX_PRINT(VX_ZONE_ERROR, "Pyramid level %d release failed\n", i);
+                    break;
                 }
+#endif
             }
+        }
+    }
+    if(prmd->base.type == (vx_enum)VX_TYPE_PYRAMID) /* TIOVX-1894- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_PYRAMID_UBR007 */
+    {
+        if(prmd->base.obj_desc!=NULL)
+        {
+            status = ownObjDescFree((tivx_obj_desc_t**)&prmd->base.obj_desc);
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1884- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_PYRAMID_UM006 */
+            if ((vx_status)VX_SUCCESS != status)
+            {
+                VX_PRINT(VX_ZONE_ERROR, "Pyramid object descriptor free failed\n");
+            }
+#endif
         }
     }
     return status;
@@ -693,6 +702,8 @@ static vx_status ownInitPyramid(vx_pyramid prmd)
 
     if ((vx_status)VX_SUCCESS != status)
     {
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1884- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_PYRAMID_UM005 */
         for (j = 0; j < i; j ++)
         {
             if (NULL != prmd->img[j])
@@ -701,14 +712,11 @@ static vx_status ownInitPyramid(vx_pyramid prmd)
                    external one */
                 (void)ownDecrementReference(vxCastRefFromImage(prmd->img[j]), (vx_enum)VX_INTERNAL);
 
-                status = ownReleaseReferenceInt(vxCastRefFromImageP(&prmd->img[j]),
+                (void)ownReleaseReferenceInt(vxCastRefFromImageP(&prmd->img[j]),
                     (vx_enum)VX_TYPE_IMAGE, (vx_enum)VX_EXTERNAL, NULL);
-                if((vx_status)VX_SUCCESS != status)
-                {
-                    VX_PRINT(VX_ZONE_ERROR,"Pyramid release failed\n");
-                }
             }
         }
+#endif
     }
 
     return (status);

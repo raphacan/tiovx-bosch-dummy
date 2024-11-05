@@ -1,5 +1,4 @@
 
-ifeq ($(TARGET_PLATFORM), $(filter $(TARGET_PLATFORM), J721E J721S2 J784S4 AM62A J722S))
 ifeq ($(TARGET_CPU),$(filter $(TARGET_CPU), A72 A53))
 ifeq ($(TARGET_OS),$(filter $(TARGET_OS), LINUX QNX))
 
@@ -21,17 +20,23 @@ CSOURCES    := \
     ../common/tivx_host.c                           \
     ../common/tivx_platform.c                       \
     ../common/tivx_mem.c                            \
-    tivx_platform_hlos.c
+    tivx_platform_hlos.c                            \
+    ../common/tivx_perf.c
 
 IDIRS       += $(TIOVX_PATH)/source/include
 IDIRS       += $(TIOVX_PATH)/source/platform/psdk_j7/common
 IDIRS       += $(TIOVX_PATH)/source/platform/os/posix
 IDIRS       += $(APP_UTILS_PATH)
+DEFS        += LDRA_UNTESTABLE_CODE
+# This is used to signify which sections of code is only applicable
+# for the host for code coverage purposes. It has been left defined
+# for all cores, but can be wrapped in the appropriate CPU when generating
+# code coverage reports.
+DEFS        += HOST_ONLY
 
 DEFS += TARGET_HLOS
 
 include $(FINALE)
 
-endif
 endif
 endif

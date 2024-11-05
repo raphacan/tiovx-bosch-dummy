@@ -62,6 +62,8 @@ void ownPlatformCreateTargets(void)
     tivxPlatformCreateTargetId((vx_enum)TIVX_TARGET_ID_MCU4_1, 0u, "TIVX_MCU4_1", 4u);
 }
 
+/*LDRA_NOANALYSIS*/
+/* TIOVX-1769- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TARGET_CONFIG_R5F_UM001 */
 void ownPlatformDeleteTargets(void)
 {
     /* MCU2-0 Targets */
@@ -114,3 +116,4 @@ void ownPlatformDeleteTargets(void)
     /* MCU4-1 targets */
     tivxPlatformDeleteTargetId((vx_enum)TIVX_TARGET_ID_MCU4_1);
 }
+/*LDRA_ANALYSIS*/

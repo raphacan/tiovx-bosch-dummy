@@ -65,6 +65,8 @@
 #include <vx_internal.h>
 #include <tivx_platform_pc.h>
 #include <app_mem_map.h>
+#include <utils/perf_stats/include/app_perf_stats.h>
+#include <tivx_platform.h>
 
 /*! \brief Structure for keeping track of platform information
  *         Currently it is mainly used for mapping target id and target name
@@ -205,34 +207,6 @@ void ownPlatformGetTargetName(vx_enum target_id, char *target_name)
     }
 }
 
-vx_bool ownPlatformTargetMatch(
-    const char *kernel_target_name, const char *target_string)
-{
-    vx_bool status = (vx_bool)vx_false_e;
-    uint32_t i;
-
-    if ((NULL != kernel_target_name) && (NULL != target_string))
-    {
-        if (0 == strncmp(kernel_target_name, target_string,
-            TIVX_TARGET_MAX_NAME))
-        {
-            for (i = 0; i < TIVX_PLATFORM_MAX_TARGETS; i ++)
-            {
-                if (0 == strncmp(
-                        g_tivx_platform_info.target_info[i].target_name,
-                        target_string,
-                        TIVX_TARGET_MAX_NAME))
-                {
-                    status = (vx_bool)vx_true_e;
-                    break;
-                }
-            }
-        }
-    }
-
-    return (status);
-}
-
 void ownPlatformGetObjDescTableInfo(tivx_obj_desc_table_info_t *table_info)
 {
     if (NULL != table_info)
@@ -289,4 +263,14 @@ void ownPlatformGetLogRtShmInfo(void **shm_base, uint32_t *shm_size)
 
 void ownPlatformTaskInit()
 {
+}
+
+void ownPlatformGetTargetPerfStats(uint32_t app_cpu_id, uint32_t target_values[TIVX_TARGET_RESOURCE_COUNT])
+{
+    uint32_t i;
+
+    for (i = 0; i < TIVX_TARGET_RESOURCE_COUNT; i++)
+    {
+        target_values[i] = 0;
+    }
 }

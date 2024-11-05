@@ -39,6 +39,7 @@
 #include <TI/tivx_target_kernel.h>
 #include "math.h"
 #include <limits.h>
+#include <vx_internal.h>
 
 TESTCASE(tivxInternalObjArray, CT_VXContext, ct_setup_vx_context, 0)
 
@@ -70,8 +71,43 @@ TEST(tivxInternalObjArray, negativeTestGetObjectArrayItem1)
     VX_CALL(vxReleaseGraph(&graph));
 }
 
+/* Testcase to fail ownIsValidContext() API for invalid object_array reference passed */
+TEST(tivxInternalObjArray, negativeTestGetObjectArrayItem2)
+{
+    vx_context context = context_->vx_context_;
+    vx_object_array object_array = NULL;
+    vx_image img = NULL;
+    vx_uint32 index = 0;
+    vx_reference exemplar = NULL;
+    tivx_obj_desc_t *obj_desc = NULL;
+
+    ASSERT_VX_OBJECT(img = vxCreateImage(context, 64, 48, VX_DF_IMAGE_U8), VX_TYPE_IMAGE);
+
+    ASSERT_VX_OBJECT(object_array = vxCreateObjectArray(context, (vx_reference)img, 2), VX_TYPE_OBJECT_ARRAY);
+
+    vx_reference ref = (vx_reference)object_array;
+    /* To fail initial condition for valid object_array reference check, ref->type is forcefully set to a type other than OBJECT_ARRAY*/
+    ref->type = VX_TYPE_ARRAY;
+    /* To fail ownIsValidContext() API*/
+    context->base.magic = TIVX_BAD_MAGIC;
+
+    ASSERT(NULL == vxGetObjectArrayItem(object_array, index));
+    ref->type = VX_TYPE_OBJECT_ARRAY;
+    context->base.magic = TIVX_MAGIC;
+
+    /* To fail object_array>base.obj_desc != NULL condition */
+    obj_desc = object_array->base.obj_desc;
+    object_array->base.obj_desc = NULL;
+    ASSERT(NULL == vxGetObjectArrayItem(object_array, index));
+    object_array->base.obj_desc = obj_desc;
+
+    VX_CALL(vxReleaseObjectArray(&object_array));
+    VX_CALL(vxReleaseImage(&img));
+}
+
 TESTCASE_TESTS(
     tivxInternalObjArray,    
-    negativeTestGetObjectArrayItem1
+    negativeTestGetObjectArrayItem1,
+    negativeTestGetObjectArrayItem2
 )
 

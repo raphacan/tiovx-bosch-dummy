@@ -72,52 +72,62 @@ vx_status tivxEventCreate(tivx_event *event)
     vx_status status = (vx_status)VX_SUCCESS;
     uint32_t temp_status;
 
-    tmp_event = (tivx_event)ownPosixObjectAlloc((vx_enum)TIVX_POSIX_TYPE_EVENT);
-    if(tmp_event==NULL)
+    if (NULL != event)
     {
-        *event = NULL;
-        VX_PRINT(VX_ZONE_ERROR, "Memory allocation failed\n");
-        status = (vx_status)VX_ERROR_NO_MEMORY;
-    }
-    else
-    {
-       
-        temp_status = (uint32_t)status | (uint32_t)pthread_mutexattr_init(&mutex_attr);
-        status = (vx_status)temp_status;
-        temp_status = (uint32_t)status | (uint32_t)pthread_condattr_init(&cond_attr);
-        status = (vx_status)temp_status;
-        
-
-        temp_status = (uint32_t)status | (uint32_t)pthread_mutex_init(&tmp_event->lock, &mutex_attr);
-        status = (vx_status)temp_status;
-        temp_status = (uint32_t)status | (uint32_t)pthread_cond_init(&tmp_event->cond, &cond_attr);
-        status = (vx_status)temp_status;
-
-        tmp_event->is_set = (uint16_t)0;
-
-        if(status!=0)
+        tmp_event = (tivx_event)ownPosixObjectAlloc((vx_enum)TIVX_POSIX_TYPE_EVENT);
+        if(tmp_event==NULL)
         {
-            (void)pthread_cond_destroy(&tmp_event->cond);
-            (void)pthread_mutex_destroy(&tmp_event->lock);
-            status = ownPosixObjectFree((uint8_t *)tmp_event, (vx_enum)TIVX_POSIX_TYPE_EVENT);
-            if ((vx_status)VX_SUCCESS != status)
-            {
-                VX_PRINT(VX_ZONE_ERROR, "Event free failed\n");
-            }
-
             *event = NULL;
-            VX_PRINT(VX_ZONE_ERROR, "Mutex initialization failed\n");
+            VX_PRINT(VX_ZONE_ERROR, "Memory allocation failed\n");
             status = (vx_status)VX_ERROR_NO_MEMORY;
         }
         else
         {
-            *event = tmp_event;
+        
+            temp_status = (uint32_t)status | (uint32_t)pthread_mutexattr_init(&mutex_attr);
+            status = (vx_status)temp_status;
+            temp_status = (uint32_t)status | (uint32_t)pthread_condattr_init(&cond_attr);
+            status = (vx_status)temp_status;
+
+
+            temp_status = (uint32_t)status | (uint32_t)pthread_mutex_init(&tmp_event->lock, &mutex_attr);
+            status = (vx_status)temp_status;
+            temp_status = (uint32_t)status | (uint32_t)pthread_cond_init(&tmp_event->cond, &cond_attr);
+            status = (vx_status)temp_status;
+
+            tmp_event->is_set = (uint16_t)0;
+
+    #ifdef LDRA_UNTESTABLE_CODE
+    /* TIOVX-1731- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_EVENT_UM001 */
+            if(status!=0)
+            {
+                (void)pthread_cond_destroy(&tmp_event->cond);
+                (void)pthread_mutex_destroy(&tmp_event->lock);
+                status = ownPosixObjectFree((uint8_t *)tmp_event, (vx_enum)TIVX_POSIX_TYPE_EVENT);
+                if ((vx_status)VX_SUCCESS != status)
+                {
+                    VX_PRINT(VX_ZONE_ERROR, "Event free failed\n");
+                }
+
+                *event = NULL;
+                VX_PRINT(VX_ZONE_ERROR, "Mutex initialization failed\n");
+                status = (vx_status)VX_ERROR_NO_MEMORY;
+            }
+            else
+    #endif
+            {
+                *event = tmp_event;
+            }
+
+            (void)pthread_condattr_destroy(&cond_attr);
+            (void)pthread_mutexattr_destroy(&mutex_attr);
         }
-
-        (void)pthread_condattr_destroy(&cond_attr);
-        (void)pthread_mutexattr_destroy(&mutex_attr);
     }
-
+    else
+    {
+        VX_PRINT(VX_ZONE_ERROR, "Event is NULL\n");
+        status = (vx_status)VX_FAILURE;
+    }
     return (status);
 }
 
@@ -125,15 +135,11 @@ vx_status tivxEventDelete(tivx_event *event)
 {
     vx_status status = (vx_status)VX_FAILURE;
 
-    if(*event != NULL)
+    if((NULL != event) && (*event != NULL))
     {
         (void)pthread_cond_destroy(&(*event)->cond);
         (void)pthread_mutex_destroy(&(*event)->lock);
-        status = ownPosixObjectFree((uint8_t *)(*event), (vx_enum)TIVX_POSIX_TYPE_EVENT);
-        if ((vx_status)VX_SUCCESS != status)
-        {
-            VX_PRINT(VX_ZONE_ERROR, "Event free failed\n");
-        }
+        (void)ownPosixObjectFree((uint8_t *)(*event), (vx_enum)TIVX_POSIX_TYPE_EVENT);
         *event = NULL;
         status = (vx_status)VX_SUCCESS;
     }
@@ -149,7 +155,7 @@ vx_status tivxEventPost(tivx_event event)
     if(event != NULL)
     {
         status = pthread_mutex_lock(&event->lock);
-        if(status == 0)
+        if(status == 0) /* TIOVX-1944- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_EVENT_UBR001 */
         {
             event->is_set = 1;
 
@@ -159,11 +165,14 @@ vx_status tivxEventPost(tivx_event event)
             status = (vx_status)temp_status;
            
         }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1731- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_EVENT_UM002 */
         if(status != 0)
         {
             VX_PRINT(VX_ZONE_ERROR, "Mutex post failed\n");
             status = (vx_status)VX_FAILURE;
         }
+#endif
     }
 
     return (status);
@@ -178,7 +187,7 @@ vx_status tivxEventWait(tivx_event event, uint32_t timeout)
     if(event != NULL)
     {
         status = pthread_mutex_lock(&event->lock);
-        if(status == 0)
+        if(status == 0) /* TIOVX-1944- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_EVENT_UBR002 */
         {
             bool done = (bool)vx_false_e;
 
@@ -196,7 +205,7 @@ vx_status tivxEventWait(tivx_event event, uint32_t timeout)
                 {
                     VX_PRINT(VX_ZONE_ERROR,
                              "Timeout set to TIVX_EVENT_TIMEOUT_NO_WAIT\n");
-                    status = (vx_status)VX_FAILURE;
+                    status = (vx_status)TIVX_ERROR_EVENT_TIMEOUT;
                     done = (bool)vx_true_e;
                 }
                 else
@@ -208,7 +217,7 @@ vx_status tivxEventWait(tivx_event event, uint32_t timeout)
 
                     retVal = gettimeofday(&tv, NULL);
 
-                    if (retVal == 0)
+                    if (retVal == 0) /* TIOVX-1944- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_EVENT_UBR003 */
                     {
                         uint32_t        sec;
                         unsigned long   micro;
@@ -236,6 +245,8 @@ vx_status tivxEventWait(tivx_event event, uint32_t timeout)
                             status = (vx_status)TIVX_ERROR_EVENT_TIMEOUT;
                             done = (bool)vx_true_e;
                         }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1731- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_EVENT_UM006 */
                         else if ((int32_t)0 != retVal)
                         {
                             /* Error other than ETIMEDOUT. */
@@ -243,11 +254,14 @@ vx_status tivxEventWait(tivx_event event, uint32_t timeout)
                             status = (vx_status)VX_FAILURE;
                             done = (bool)vx_true_e;
                         }
+#endif
                         else
                         {
                             /*Do Nothing*/
                         }
                     }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1731- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_EVENT_UM005 */
                     else
                     {
                         /* gettimeofday() failed. */
@@ -255,28 +269,33 @@ vx_status tivxEventWait(tivx_event event, uint32_t timeout)
                         status = (vx_status)VX_FAILURE;
                         done = (bool)vx_true_e;
                     }
+#endif
                 }
                 else
                 {
                     /* timeout == TIVX_EVENT_TIMEOUT_WAIT_FOREVER */
                     retVal = pthread_cond_wait(&event->cond, &event->lock);
-
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1731- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_EVENT_UM007 */
                     if ((int32_t)0 != retVal)
                     {
                         VX_PRINT(VX_ZONE_ERROR, "Event wait failed.\n");
                         status = (vx_status)VX_FAILURE;
                         done = (bool)vx_true_e;
                     }
+#endif
                 }
             }
 
             status1 = pthread_mutex_unlock(&event->lock);
-
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1731- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_EVENT_UM003 */
             if(status1 != 0)
             {
                 VX_PRINT(VX_ZONE_ERROR, "Mutex unlock failed\n");
                 status = (vx_status)VX_FAILURE;
             }
+#endif
         }
     }
 
@@ -290,16 +309,19 @@ vx_status tivxEventClear(tivx_event event)
     if(event != NULL)
     {
         status = pthread_mutex_lock(&event->lock);
-        if(status == 0)
+        if(status == 0) /* TIOVX-1944- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_EVENT_UBR004 */
         {
             event->is_set = 0;
             status = pthread_mutex_unlock(&event->lock);
         }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1731- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_EVENT_UM004 */
         if(status != 0)
         {
             VX_PRINT(VX_ZONE_ERROR, "Mutex lock failed\n");
             status = (vx_status)VX_FAILURE;
         }
+#endif
     }
 
     return status;

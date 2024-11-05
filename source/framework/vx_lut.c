@@ -30,7 +30,6 @@ VX_API_ENTRY vx_lut VX_API_CALL vxCreateLUT(vx_context context, vx_enum data_typ
     vx_reference ref = NULL;
     vx_size dim = 0;
     tivx_obj_desc_lut_t *obj_desc = NULL;
-    vx_status status = (vx_status)VX_SUCCESS;
 
     if(ownIsValidContext(context) == (vx_bool)vx_true_e)
     {
@@ -81,11 +80,7 @@ VX_API_ENTRY vx_lut VX_API_CALL vxCreateLUT(vx_context context, vx_enum data_typ
                     (vx_enum)TIVX_OBJ_DESC_LUT, vxCastRefFromLUT(lut));
                 if(obj_desc==NULL)
                 {
-                    status = vxReleaseLUT(&lut);
-                    if((vx_status)VX_SUCCESS != status)
-                    {
-                        VX_PRINT(VX_ZONE_ERROR,"Failed to release reference to LUT object\n");
-                    }
+                    (void)vxReleaseLUT(&lut);
 
                     vxAddLogEntry(&context->base, (vx_status)VX_ERROR_NO_RESOURCES,
                         "Could not allocate lut object descriptor\n");
@@ -168,15 +163,15 @@ VX_API_ENTRY vx_status VX_API_CALL vxQueryLUT(
             case (vx_enum)VX_LUT_OFFSET:
                 if (VX_CHECK_PARAM(ptr, size, vx_uint32, 0x3U))
                 {
-                    if ( ((vx_enum)VX_TYPE_UINT8 == obj_desc->item_type) ||
-                         ((vx_enum)VX_TYPE_UINT16 == obj_desc->item_type) ||
+                    if ( ((vx_enum)VX_TYPE_UINT8 == obj_desc->item_type) || /*TIOVX-1899- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_LUT_UBR001 */
+                         ((vx_enum)VX_TYPE_UINT16 == obj_desc->item_type) || /*TIOVX-1899- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_LUT_UBR002 */
                          ((vx_enum)VX_TYPE_UINT32 == obj_desc->item_type) ||
                          ((vx_enum)VX_TYPE_UINT64 == obj_desc->item_type) )
                     {
                         *(vx_uint32 *)ptr = 0;
                     }
-                    else if ( ((vx_enum)VX_TYPE_CHAR == obj_desc->item_type) ||
-                              ((vx_enum)VX_TYPE_INT8 == obj_desc->item_type) ||
+                    else if ( ((vx_enum)VX_TYPE_CHAR == obj_desc->item_type) || /*TIOVX-1899- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_LUT_UBR003 */
+                              ((vx_enum)VX_TYPE_INT8 == obj_desc->item_type) || /*TIOVX-1899- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_LUT_UBR004 */
                               ((vx_enum)VX_TYPE_INT16 == obj_desc->item_type) ||
                               ((vx_enum)VX_TYPE_INT32 == obj_desc->item_type) ||
                               ((vx_enum)VX_TYPE_INT64 == obj_desc->item_type) ||

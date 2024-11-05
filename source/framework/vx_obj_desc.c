@@ -116,10 +116,13 @@ static void ownObjDescIpcHandler(uint32_t payload)
     /* now this is local target hence call target API directly */
     status = ownTargetQueueObjDesc(dst_target_id, obj_desc_id);
 
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1703- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_OBJDESC_UM001 */
     if(status != (vx_status)VX_SUCCESS)
     {
         VX_PRINT(VX_ZONE_ERROR,"ownTargetQueueObjDesc failed\n");
     }
+#endif
 }
 
 void ownObjDescInit(void)
@@ -175,7 +178,7 @@ tivx_obj_desc_t *ownObjDescAlloc(vx_enum ref_type, vx_reference ref)
              * allocating and deallocating object descriptor slots in this file. */
             ownPlatformSystemUnlock((vx_enum)TIVX_PLATFORM_LOCK_OBJ_DESC_TABLE);
 
-            ownLogResourceAlloc("TIVX_PLAT_MAX_OBJ_DESC_SHM_INST", 1);
+            ownLogResourceAlloc("TIVX_PLATFORM_MAX_OBJ_DESC_SHM_INST", 1);
             ownTableIncrementValue(ref_type);
             /* init entry that is found */
             tmp_obj_desc->obj_desc_id = (uint16_t)idx;
@@ -220,7 +223,7 @@ vx_status ownObjDescFree(tivx_obj_desc_t **obj_desc)
     {
         if((*obj_desc)->obj_desc_id < g_obj_desc_table.num_entries)
         {
-            ownLogResourceFree("TIVX_PLAT_MAX_OBJ_DESC_SHM_INST", 1);
+            ownLogResourceFree("TIVX_PLATFORM_MAX_OBJ_DESC_SHM_INST", 1);
             ownTableDecrementValue((vx_enum)(*obj_desc)->type);
             /* valid object descriptor, free it */
             (*obj_desc)->type = (vx_enum)TIVX_OBJ_DESC_INVALID;
@@ -280,10 +283,13 @@ vx_status ownObjDescSend(uint32_t dst_target_id, uint16_t obj_desc_id)
         /* target is on same CPU queue obj_desc using target APIs */
         status = ownTargetQueueObjDesc((int32_t)dst_target_id, obj_desc_id);
 
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1703- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_OBJDESC_UM002 */
         if(status != (vx_status)VX_SUCCESS)
         {
             VX_PRINT(VX_ZONE_ERROR,"ownTargetQueueObjDesc failed\n");
         }
+#endif
     }
     else
     {
@@ -293,16 +299,19 @@ vx_status ownObjDescSend(uint32_t dst_target_id, uint16_t obj_desc_id)
 
         if (NULL != obj_desc)
         {
-            if((self_cpu_id < (vx_enum)TIVX_OBJ_DESC_MAX_HOST_PORT_ID_CPU) && (self_cpu_id != -1))
+            if((self_cpu_id < (vx_enum)TIVX_OBJ_DESC_MAX_HOST_PORT_ID_CPU) /* TIOVX-1921- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_OBJ_DESC_UBR001 */ 
+            && (self_cpu_id != -1)) /* TIOVX-1921- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_OBJ_DESC_UBR002 */
             {
                 /* target is on remote CPU, send using IPC */
                 status = ownIpcSendMsg(cpu_id, ipc_payload, obj_desc->host_cpu_id, obj_desc->host_port_id[self_cpu_id]);
             }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1703- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_OBJDESC_UM003 */
             else
             {
                 status = (vx_status)VX_FAILURE;
             }
-
+#endif
             if(status != (vx_status)VX_SUCCESS)
             {
                 VX_PRINT(VX_ZONE_ERROR,"ownIpcSendMsg failed\n");
@@ -316,18 +325,6 @@ vx_status ownObjDescSend(uint32_t dst_target_id, uint16_t obj_desc_id)
     }
 
     return status;
-}
-
-uint16_t ownReferenceGetObjDescId(vx_reference ref)
-{
-    uint16_t obj_desc_id = (vx_enum)TIVX_OBJ_DESC_INVALID;
-
-    if (NULL != ref)
-    {
-        obj_desc_id = ref->obj_desc->obj_desc_id;
-    }
-
-    return (obj_desc_id);
 }
 
 void tivxGetObjDescList(volatile uint16_t obj_desc_id[],
@@ -445,7 +442,8 @@ int32_t tivx_obj_desc_strncmp(volatile void *dst, volatile void *src, uint32_t s
 
     for(i=0; i<size; i++)
     {
-        if((d[i] != s[i]) || (d[i] == 0U) || (s[i] == 0U))
+        if((d[i] != s[i]) || (d[i] == 0U)  /* TIOVX-1965- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_RTOS_TIVX_OBJ_DESC_UBR001 */
+        || (s[i] == 0U))
         {
             ret = ((int32_t)d[i] - (int32_t)s[i]);
             break;
@@ -463,7 +461,8 @@ int32_t tivx_obj_desc_strncmp_delim(volatile void *dst, volatile void *src, uint
 
     for(i=0; i<size; i++)
     {
-        if((d[i] != s[i]) || (d[i] == 0U) || (s[i] == 0U) || (d[i] == (uint8_t)delim) || (s[i] == (uint8_t)delim))
+        if((d[i] != s[i]) || (d[i] == 0U) || (s[i] == 0U) /* TIOVX-1921- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_OBJ_DESC_UBR003 */
+        || (d[i] == (uint8_t)delim) || (s[i] == (uint8_t)delim))
         {
             if((d[i] != (uint8_t)delim) && (s[i] != (uint8_t)delim))
             {

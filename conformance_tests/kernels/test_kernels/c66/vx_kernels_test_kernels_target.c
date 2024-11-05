@@ -65,30 +65,15 @@
 #include "tivx_test_kernels_kernels.h"
 #include "tivx_kernels_target_utils.h"
 
-#ifdef BUILD_BAM
-void tivxAddTargetKernelBamNotNot(void);
+void tivxAddTargetKernelTiovxOverhead(void);
 void tivxAddTargetKernelTestTarget(void);
-#else
-void tivxAddTargetKernelNotNot(void);
-void tivxAddTargetKernelTestTarget(void);
-#endif
 
-#ifdef BUILD_BAM
-void tivxRemoveTargetKernelBamNotNot(void);
+void tivxRemoveTargetKernelTiovxOverhead(void);
 void tivxRemoveTargetKernelTestTarget(void);
-#else
-void tivxRemoveTargetKernelNotNot(void);
-void tivxRemoveTargetKernelTestTarget(void);
-#endif
 
 static Tivx_Target_Kernel_List  gTivx_target_kernel_list[] = {
-#ifdef BUILD_BAM
-    {&tivxAddTargetKernelBamNotNot, &tivxRemoveTargetKernelBamNotNot},
     {&tivxAddTargetKernelTestTarget, &tivxRemoveTargetKernelTestTarget},
-#else
-    {&tivxAddTargetKernelNotNot, &tivxRemoveTargetKernelNotNot},
-    {&tivxAddTargetKernelTestTarget, &tivxRemoveTargetKernelTestTarget},
-#endif
+    {&tivxAddTargetKernelTiovxOverhead, &tivxRemoveTargetKernelTiovxOverhead},
 };
 
 void tivxRegisterTestKernelsTargetDspKernels(void)

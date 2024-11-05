@@ -145,6 +145,22 @@ VX_API_ENTRY vx_node VX_API_CALL tivxScalarIntermediateNode(vx_graph graph,
                                            dimof(prms));
     return node;
 }
+
+VX_API_ENTRY vx_node VX_API_CALL tivxImageIntermediateNode(vx_graph graph,
+                                      vx_image            in,
+                                      vx_image            out)
+{
+    vx_reference prms[] = {
+            (vx_reference)in,
+            (vx_reference)out
+    };
+    vx_node node = tivxCreateNodeByKernelName(graph,
+                                           TIVX_KERNEL_IMAGE_INTERMEDIATE_NAME,
+                                           prms,
+                                           dimof(prms));
+    return node;
+}
+
 VX_API_ENTRY vx_node VX_API_CALL tivxScalarSourceErrorNode(vx_graph graph,
                                       vx_scalar            out)
 {
@@ -267,6 +283,21 @@ VX_API_ENTRY vx_node VX_API_CALL tivxTestTargetNode(vx_graph graph,
     };
     vx_node node = tivxCreateNodeByKernelName(graph,
                                            TIVX_KERNEL_TEST_TARGET_NAME,
+                                           prms,
+                                           dimof(prms));
+    return node;
+}
+
+VX_API_ENTRY vx_node VX_API_CALL tivxTiovxOverheadNode(vx_graph graph,
+                                      vx_scalar            input,
+                                      vx_scalar            output)
+{
+    vx_reference prms[] = {
+            (vx_reference)input,
+            (vx_reference)output
+    };
+    vx_node node = tivxCreateNodeByKernelName(graph,
+                                           TIVX_KERNEL_TIOVX_OVERHEAD_NAME,
                                            prms,
                                            dimof(prms));
     return node;

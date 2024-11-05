@@ -26,6 +26,7 @@
 #include <math.h>
 #include <TI/tivx_mutex.h>
 #include <TI/tivx_queue.h>
+#include <TI/tivx_task.h>
 
 /* The below include files are used for TIVX_TEST_WAIVER_COMPLEXITY_AND_MAINTENANCE_COST_001
  * described below */
@@ -35,6 +36,8 @@
 #include <vx_context.h>
 #include <tivx_data_ref_queue.h>
 #include <vx_node.h>
+#include <vx_graph.h>
+#include <vx_internal.h>
 
 #include "shared_functions.h"
 
@@ -150,6 +153,9 @@ TEST(tivxObjDescBoundary, negativeBoundaryThreshold)
     params.format[2].msb = 11;
     params.meta_height_before = 5;
     params.meta_height_after = 0;
+    tivx_data_ref_queue ref;
+    tivx_data_ref_queue_create_params_t prms;
+    prms.pipeline_depth = 1;
 
     ASSERT_VX_OBJECT(conv = vxCreateConvolution(context, cols, rows), VX_TYPE_CONVOLUTION);
     ASSERT_EQ_VX_STATUS(VX_SUCCESS, ownAllocReferenceBufferGeneric((vx_reference)conv));
@@ -194,7 +200,9 @@ TEST(tivxObjDescBoundary, negativeBoundaryThreshold)
     ASSERT_EQ_VX_STATUS(VX_ERROR_NO_RESOURCES, ownNodeCreateUserCallbackCommand(node2, 0));
     ASSERT_EQ_VX_STATUS(VX_ERROR_NO_RESOURCES, ownNodeAllocObjDescForPipeline(node2, 2));
     ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_REFERENCE, ownAllocReferenceBufferGeneric((vx_reference)img));
-    for (j = 0; j < i-1; j++)
+    ASSERT_EQ_VX_STATUS(VX_ERROR_NO_RESOURCES, ownGraphAllocAndEnqueueObjDescForPipeline(graph));
+    ASSERT(NULL == tivxDataRefQueueCreate(graph,&prms));
+    for (j = 0; j < i; j++)
     {
         if (NULL == obj_desc[j])
         {
@@ -236,7 +244,7 @@ TEST(tivxObjDescBoundary, negativeBoundaryTestownContextCreateCmdObj)
     /* Creating context to invoke static function ownContextCreateCmdObj() */
     context = vxCreateContext();
 
-    for (j = 0; j < i-1; j++)
+    for (j = 0; j < i; j++)
     {
         if (NULL == tmp_event[j])
         {
@@ -284,7 +292,7 @@ TEST(tivxObjDescBoundary, negativeBoundaryTestownContextCreateCmdObj1)
     context = vxCreateContext();
 
     /* Cleaning up */
-    for (j = 0; j < i-1; j++)
+    for (j = 0; j < i; j++)
     {
         if (NULL == obj[j])
         {
@@ -322,7 +330,7 @@ TEST(tivxObjDescBoundary, negativeBoundaryTestownContextCreateCmdObj2)
     context = vxCreateContext();
 
     /* Cleanup */
-    for (j = 0; j < i-1; j++)
+    for (j = 0; j < i; j++)
     {
         if (NULL == obj_desc[j])
         {
@@ -355,12 +363,67 @@ TEST(tivxObjDescBoundary, testownContextFlushCmdPendQueue)
     ASSERT_EQ_VX_STATUS(VX_FAILURE, ownContextFlushCmdPendQueue(context));
 }
 
+/* The following tests are defined for POSIX only, as they are getting the
+max value and/or alloc/free functions from POSIX headers */
+#if !defined(R5F) /* Not R5F */
+TEST(tivxObjDescBoundary, negativeTestOwnEventQueueCreate)
+{
+    tivx_event_queue_t *event_q[TIVX_QUEUE_MAX_OBJECTS];
+    tivx_queue tmp_queue;
+    uintptr_t temp_queue_memory[TIVX_EVENT_QUEUE_MAX_SIZE];
+
+    vx_uint32 i = 0, j = 0;
+
+    /* Allocate max possible number of event queues */
+    for (i=0; i <=TIVX_QUEUE_MAX_OBJECTS; i++ )
+    {
+        event_q[i] = tivxMemAlloc(sizeof(tivx_event_queue_t), TIVX_MEM_EXTERNAL);
+        if (VX_SUCCESS != ownEventQueueCreate(event_q[i]))
+        {
+            VX_CALL(tivxMemFree(event_q[i], sizeof(tivx_event_queue_t), TIVX_MEM_EXTERNAL));
+            i--;
+            break;
+        }
+    }
+
+    /* Delete the last succesfully created event queue to release 2 queues (Each event queue consists of 2 queues) */
+    VX_CALL(ownEventQueueDelete(event_q[i]));
+    VX_CALL(tivxMemFree(event_q[i], sizeof(tivx_event_queue_t), TIVX_MEM_EXTERNAL));
+
+    /* Allocate 1 Queue */
+    VX_CALL(tivxQueueCreate(&tmp_queue, TIVX_EVENT_QUEUE_MAX_SIZE, temp_queue_memory, 0));
+
+    /* Again allocate event queues until max limit */
+    for (; i <=TIVX_QUEUE_MAX_OBJECTS; i++ )
+    {
+        event_q[i] = tivxMemAlloc(sizeof(tivx_event_queue_t), TIVX_MEM_EXTERNAL);
+        if (VX_SUCCESS != ownEventQueueCreate(event_q[i]))
+        {
+            break;
+        }
+    }
+
+    /* Cleanup */
+    for (j=0; j < i; j++ )
+    {
+        if (VX_SUCCESS != ownEventQueueDelete(event_q[j]))
+        {
+            VX_CALL(tivxMemFree(event_q[j], sizeof(tivx_event_queue_t), TIVX_MEM_EXTERNAL));
+            break;
+        }
+        VX_CALL(tivxMemFree(event_q[j], sizeof(tivx_event_queue_t), TIVX_MEM_EXTERNAL));
+    }
+    VX_CALL(tivxQueueDelete(&tmp_queue));
+}
+#endif  /* Not R5F */
+
 TESTCASE_TESTS(tivxObjDescBoundary,
         negativeTestObjDescBoundary,
         negativeBoundaryThreshold,
 #if !defined(R5F) /* Not R5F */
         negativeBoundaryTestownContextCreateCmdObj,
         negativeBoundaryTestownContextCreateCmdObj1,
+        negativeTestOwnEventQueueCreate,
 #endif  /* Not R5F */
         negativeBoundaryTestownContextCreateCmdObj2,
         testownContextFlushCmdPendQueue

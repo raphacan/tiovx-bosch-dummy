@@ -233,6 +233,11 @@ extern "C" {
  */
 #define TIVX_IMAGE_MAX_SUBIMAGES           (16u)
 
+/*! \brief Max depth for subimages of vx_image
+ * \ingroup group_vx_image_cfg
+*/
+#define TIVX_IMAGE_MAX_SUBIMAGE_DEPTH            (2U)
+
 /*! \brief Max number image objects supported
  * \ingroup group_vx_image_cfg
  */
@@ -508,11 +513,6 @@ extern "C" {
  * \ingroup group_vx_graph_cfg
 */
 #define TIVX_GRAPH_MAX_PARAM_REFS          (8u)
-
-/*! \brief Max depth for subimages of vx_image
- * \ingroup group_vx_graph_cfg
-*/
-#define TIVX_MAX_SUBIMAGE_DEPTH            (2U)
 
 #ifdef __cplusplus
 }

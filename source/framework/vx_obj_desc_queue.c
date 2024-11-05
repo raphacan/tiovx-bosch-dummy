@@ -113,7 +113,7 @@ vx_status ownObjDescQueueRelease(uint16_t *obj_desc_id)
 
         if((obj_desc!=NULL) && ((vx_enum)obj_desc->base.type == (vx_enum)TIVX_OBJ_DESC_QUEUE))
         {
-            if((vx_status)VX_SUCCESS == ownObjDescFree((tivx_obj_desc_t**)&obj_desc))
+            if((vx_status)VX_SUCCESS == ownObjDescFree((tivx_obj_desc_t**)&obj_desc))/* TIOVX-1924- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_OBJ_DESC_QUEUE_UBR001 */
             {
                 *obj_desc_id = (vx_enum)TIVX_OBJ_DESC_INVALID;
 

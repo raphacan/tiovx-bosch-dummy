@@ -138,13 +138,6 @@ extern "C" {
  */
 #define TIVX_OBJ_DESC_ID_MASK            (0x0000FFFFu)
 
-
-/*! \brief Mask for storing Object Descriptor id in 32bit variable
- * \ingroup group_tivx_obj_desc_priv
- */
-#define TIVX_OBJ_DESC_BIDIR_FLAG         (0x10000U)
-
-
 /*!
  * \brief Command object descriptor
  *
@@ -517,13 +510,6 @@ vx_bool ownObjDescIsValidType(const tivx_obj_desc_t *obj_desc, tivx_obj_desc_typ
  * \ingroup group_tivx_obj_desc_priv
  */
 void ownObjDescInit(void);
-
-/*!
- * \brief Function to get the descriptor object from the given reference
- *
- * \ingroup group_tivx_obj_desc_priv
- */
-uint16_t ownReferenceGetObjDescId(vx_reference ref);
 
 #ifdef __cplusplus
 }

@@ -127,7 +127,7 @@ vx_status tivxQueueCreate(
 
             (void)pthread_mutexattr_destroy(&mutex_attr);
 
-            if(status==0)
+            if(status==0) /* TIOVX-1947- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_QUEUE_UBR001 */
             {
                 if ((uint32_t)(queue->flags & TIVX_QUEUE_FLAG_BLOCK_ON_GET) != (uint32_t)0)
                 {
@@ -166,21 +166,20 @@ vx_status tivxQueueCreate(
                     (void)pthread_condattr_destroy(&cond_attr);
                 }
             }
-            if ((vx_status)VX_SUCCESS == status)
+            if ((vx_status)VX_SUCCESS == status) /* TIOVX-1947- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_QUEUE_UBR002 */
             {
                 queue->blockedOnGet = (vx_bool)vx_false_e;
                 queue->blockedOnPut = (vx_bool)vx_false_e;
             }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1737- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TIVX_QUEUE_UM001 */
             else
             {
                 (void)pthread_mutex_destroy(&context->lock);
-                status = ownPosixObjectFree(queue->context, (vx_enum)TIVX_POSIX_TYPE_QUEUE);
-                if ((vx_status)VX_SUCCESS != status)
-                {
-                    VX_PRINT(VX_ZONE_ERROR, "Queue free failed\n");
-                }
+                (void)ownPosixObjectFree(queue->context, (vx_enum)TIVX_POSIX_TYPE_QUEUE);
                 queue->context = NULL;
             }
+#endif
         }
     }
 
@@ -208,13 +207,14 @@ vx_status tivxQueueDelete(tivx_queue *queue)
         (void)pthread_mutex_destroy(&context->lock);
 
         status = ownPosixObjectFree((uint8_t*)context, (vx_enum)TIVX_POSIX_TYPE_QUEUE);
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1737- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_TIVX_QUEUE_UM002 */
         if ((vx_status)VX_SUCCESS != status)
         {
-            VX_PRINT(VX_ZONE_ERROR, "Queue free failed\n");
+            VX_PRINT(VX_ZONE_ERROR, "Failed to free Posix Object\n");
         }
+#endif
         queue->context = NULL;
-
-        status = (vx_status)VX_SUCCESS;
     }
 
     return (status);
@@ -232,10 +232,14 @@ vx_status tivxQueuePut(tivx_queue *queue, uintptr_t data, uint32_t timeout)
         context = queue->context;
 
         status = pthread_mutex_lock(&context->lock);
-        if(status==0)
+        if(status==0) /* TIOVX-1947- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_QUEUE_UBR003 */
         {
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1737- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_QUEUE_UM003 */
             do
             {
+/* END: TIOVX_CODE_COVERAGE_QUEUE_UM003 */
+#endif
                 if (queue->count < queue->max_ele)
                 {
                     /* insert element */
@@ -270,6 +274,8 @@ vx_status tivxQueuePut(tivx_queue *queue, uintptr_t data, uint32_t timeout)
                         status = (vx_status)VX_FAILURE;
                         do_break = (vx_bool)vx_true_e; /* non-blocking, so exit with error */
                     }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1737- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_QUEUE_UM004 */
                     else if ((uint32_t)(queue->flags & TIVX_QUEUE_FLAG_BLOCK_ON_PUT) != (uint32_t)0)
                     {
                         /* blocking on queue put enabled */
@@ -277,6 +283,8 @@ vx_status tivxQueuePut(tivx_queue *queue, uintptr_t data, uint32_t timeout)
                         (void)pthread_cond_wait(&context->condPut, &context->lock);
                         queue->blockedOnPut = (vx_bool)vx_false_e;
                     }
+/* END: TIOVX_CODE_COVERAGE_QUEUE_UM004 */
+#endif
                     else
                     {
                         /* blocking on queue put disabled */
@@ -288,6 +296,8 @@ vx_status tivxQueuePut(tivx_queue *queue, uintptr_t data, uint32_t timeout)
                     }
                 }
 
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1737- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_QUEUE_UM003 */
                 if ((vx_bool)vx_true_e == do_break)
                 {
                     break;
@@ -295,6 +305,8 @@ vx_status tivxQueuePut(tivx_queue *queue, uintptr_t data, uint32_t timeout)
             }
             while (true);
 
+/* END: TIOVX_CODE_COVERAGE_QUEUE_UM003 */
+#endif
             temp_status = (uint32_t)status | (uint32_t)pthread_mutex_unlock(&context->lock);
             status = (vx_status)temp_status;
         }
@@ -315,7 +327,7 @@ vx_status tivxQueueGet(tivx_queue *queue, uintptr_t *data, uint32_t timeout)
         context = queue->context;
 
         status = pthread_mutex_lock(&context->lock);
-        if(status==0)
+        if(status==0) /* TIOVX-1947- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_QUEUE_UBR004 */
         {
             do
             {
@@ -377,7 +389,7 @@ vx_status tivxQueueGet(tivx_queue *queue, uintptr_t *data, uint32_t timeout)
                     break;
                 }
             }
-            while (true);
+            while (true); /* TIOVX-1947- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_QUEUE_UBR005 */
           
             temp_status = (uint32_t)status | (uint32_t)pthread_mutex_unlock(&context->lock);
             status = (vx_status)temp_status;
@@ -397,7 +409,7 @@ vx_bool tivxQueueIsEmpty(const tivx_queue *queue)
         context = queue->context;
 
         status = pthread_mutex_lock(&context->lock);
-        if(status==0)
+        if(status==0) /* TIOVX-1947- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_QUEUE_UBR006 */
         {
             if (queue->count == 0U)
             {

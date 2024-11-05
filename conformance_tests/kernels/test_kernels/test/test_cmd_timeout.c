@@ -730,7 +730,7 @@ TEST_WITH_ARG(tivxCmdTimeout, testTimeoutCreateFail, TestArg, TEST_PARAMS)
     /* Initialize the timeout to a valid timeout value less than vxSetTimeoutVal. */
     cfgParams                    = &objCntxt.cfgParams;
     objCntxt.vxContext           = context_->vx_context_;
-    cfgParams->createCmdTimeout  = 2;
+    cfgParams->createCmdTimeout  = 4;
     cfgParams->deleteCmdTimeout  = 0;
     cfgParams->controlCmdTimeout = 0;
     cfgParams->processCmdTimeout = 0;
@@ -805,7 +805,7 @@ TEST_WITH_ARG(tivxCmdTimeout, testTimeoutCreateFail, TestArg, TEST_PARAMS)
     }
 
     /* Update the node timeout value to something that will now pass. */
-    vxSetTimeoutVal = 5;
+    vxSetTimeoutVal = 8;
 
     /* Set a valid timeout attribute.  */
     vxStatus = vxSetNodeAttribute(objCntxt.vxCmdTestNode, TIVX_NODE_TIMEOUT,

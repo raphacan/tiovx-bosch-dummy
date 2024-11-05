@@ -71,6 +71,7 @@ extern "C" {
 #endif
 
 #include <tivx_obj_desc_priv.h>
+#include <TI/tivx_log_stats.h>
 
 /*!
  * \file
@@ -176,19 +177,6 @@ vx_enum ownPlatformGetTargetId(const char *target_name);
 void ownPlatformGetTargetName(vx_enum target_id, char *target_name);
 
 /*!
- * \brief Match a user specified target_string with kernel suported target name
- *
- * \param kernel_target_name [in] Kernel supported target name
- * \param target_string [in] user specified target string
- *
- * \return vx_true_e if match found, else vx_false_e
- *
- * \ingroup group_tivx_platform
- */
-vx_bool ownPlatformTargetMatch(const char *kernel_target_name, const char *target_string);
-
-
-/*!
  * \brief Return shared memory info which holds the object descriptors
  *
  *        This is platform APIs since method of specifying shared memory,
@@ -289,6 +277,12 @@ void ownPlatformDeactivate(void);
  * \ingroup group_tivx_platform
  */
 void ownPlatformTaskInit(void);
+
+/*! \brief Function to query targets for their TIOVX resource statistics
+ *
+ * \ingroup group_tivx_platform
+ */
+void ownPlatformGetTargetPerfStats(uint32_t app_cpu_id, uint32_t target_values[TIVX_TARGET_RESOURCE_COUNT]);
 
 #ifdef __cplusplus
 }

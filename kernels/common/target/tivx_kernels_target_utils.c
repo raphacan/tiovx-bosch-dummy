@@ -60,13 +60,11 @@
 *
 */
 
-
 #include <TI/tivx.h>
 #include <TI/tivx_debug.h>
 #include <VX/vx.h>
 #include <TI/tivx_obj_desc.h>
 #include <tivx_kernels_target_utils.h>
-
 
 void tivxRegisterTargetKernels(const Tivx_Target_Kernel_List *kernel_list, uint32_t num_kernels)
 {
@@ -394,7 +392,7 @@ void tivxReserveC66xL2MEM(void)
 
 vx_status tivxKernelsTargetUtilsAssignTargetNameDsp(char *target_name)
 {
-    vx_status status = (vx_status)VX_SUCCESS;
+    vx_status status = (vx_status)VX_FAILURE;
     vx_enum self_cpu;
 
     self_cpu = tivxGetSelfCpuId();
@@ -406,11 +404,13 @@ vx_status tivxKernelsTargetUtilsAssignTargetNameDsp(char *target_name)
         {
             (void)strncpy(target_name, TIVX_TARGET_DSP1,
                 TIVX_TARGET_MAX_NAME);
+            status = (vx_status)VX_SUCCESS;
         }
         else
         {
             (void)strncpy(target_name, TIVX_TARGET_DSP2,
                 TIVX_TARGET_MAX_NAME);
+            status = (vx_status)VX_SUCCESS;
         }
     }
     else
@@ -424,6 +424,7 @@ vx_status tivxKernelsTargetUtilsAssignTargetNameDsp(char *target_name)
     {
         (void)strncpy(target_name, TIVX_TARGET_DSP1,
             TIVX_TARGET_MAX_NAME);
+        status = (vx_status)VX_SUCCESS;
     }
     else
     {
@@ -431,11 +432,12 @@ vx_status tivxKernelsTargetUtilsAssignTargetNameDsp(char *target_name)
     }
     #endif
 
-    #if defined(SOC_J784S4)
+    #if defined(SOC_J784S4) || defined(SOC_J742S2)
     if (self_cpu == (vx_enum)TIVX_CPU_ID_DSP_C7_2)
     {
         (void)strncpy(target_name, TIVX_TARGET_DSP1,
             TIVX_TARGET_MAX_NAME);
+        status = (vx_status)VX_SUCCESS;
     }
     else
     {
@@ -446,26 +448,50 @@ vx_status tivxKernelsTargetUtilsAssignTargetNameDsp(char *target_name)
     return status;
 }
 
+vx_status tivxKernelsTargetUtilsAssignTargetNameC7x(char *target_name)
+{
+    vx_status status = (vx_status)VX_FAILURE;
+    #if defined(SOC_J721E)
+    vx_enum self_cpu;
+
+    self_cpu = tivxGetSelfCpuId();
+    if (self_cpu == (vx_enum)TIVX_CPU_ID_DSP_C7_1)
+    {
+        (void)strncpy(target_name, TIVX_TARGET_DSP_C7_1,
+            TIVX_TARGET_MAX_NAME);
+        status = (vx_status)VX_SUCCESS;
+    }
+    #endif
+
+    return status;
+}
+
 vx_status tivxKernelsTargetUtilsAssignTargetNameMcu(char *target_name)
 {
-    vx_status status = (vx_status)VX_SUCCESS;
+    vx_status status = (vx_status)VX_FAILURE;
     vx_enum self_cpu;
 
     self_cpu = tivxGetSelfCpuId();
 
-    #if defined(SOC_AM62A)
-    if (self_cpu == TIVX_CPU_ID_MCU1_0)
+    #if defined(SOC_AM62A) || defined(SOC_J722S)
+    if (self_cpu == (vx_enum)TIVX_CPU_ID_MCU1_0)
     {
         (void)strncpy(target_name, TIVX_TARGET_MCU1_0, TIVX_TARGET_MAX_NAME);
         status = (vx_status)VX_SUCCESS;
     }
+    #if defined(SOC_J722S)
+    else if ( self_cpu == (vx_enum)TIVX_CPU_ID_MCU2_0 )
+    {
+        (void)strncpy(target_name, TIVX_TARGET_MCU2_0, TIVX_TARGET_MAX_NAME);
+        status = (vx_status)VX_SUCCESS;
+    }
+    #endif
     #else
     if ( self_cpu == (vx_enum)TIVX_CPU_ID_MCU2_0 )
     {
         (void)strncpy(target_name, TIVX_TARGET_MCU2_0, TIVX_TARGET_MAX_NAME);
         status = (vx_status)VX_SUCCESS;
     }
-    #ifndef SOC_J722S
     else
     if ( self_cpu == (vx_enum)TIVX_CPU_ID_MCU2_1 )
     {
@@ -473,10 +499,25 @@ vx_status tivxKernelsTargetUtilsAssignTargetNameMcu(char *target_name)
         status = (vx_status)VX_SUCCESS;
     }
     #endif
-    #endif
     else
     {
         status = (vx_status)VX_FAILURE;
+    }
+
+    return status;
+}
+
+vx_status tivxKernelsTargetUtilsAssignTargetNameMpu(char *target_name)
+{
+    vx_status status = (vx_status)VX_FAILURE;
+    vx_enum self_cpu;
+
+    self_cpu = tivxGetSelfCpuId();
+
+    if (self_cpu == (vx_enum)TIVX_CPU_ID_MPU_0)
+    {
+        (void)strncpy(target_name, TIVX_TARGET_MPU_0, TIVX_TARGET_MAX_NAME);
+        status = (vx_status)VX_SUCCESS;
     }
 
     return status;

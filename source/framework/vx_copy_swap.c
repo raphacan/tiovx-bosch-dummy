@@ -1,6 +1,6 @@
 /*
 
- * Copyright (c) 2023 The Khronos Group Inc.
+ * Copyright (c) 2024 The Khronos Group Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,10 @@ static vx_status ownCopyMoveRemoveNode(vx_graph graph, const vx_uint32 node_inde
         tivx_obj_desc_node_t *out_objd = out_node->obj_desc[0];
         vx_uint32 j = 0;
         /* remove old node from in nodes of the out node */
-        while (old_node_id != out_objd->in_node_id[j]) j++;
+        while (old_node_id != out_objd->in_node_id[j]) 
+        {
+            j++;
+        }
         out_objd->in_node_id[j] = out_objd->in_node_id[out_objd->num_in_nodes - 1U];
         out_objd->num_in_nodes--;
         /* add all in nodes of old_node to out_node */
@@ -346,10 +349,6 @@ vx_status ownGraphProcessCopyMoveNodes(vx_graph graph)
                         /* Re-start the loop */
                         break;
                     }
-                    else
-                    {
-                        /* status will be reported */
-                    }
                 }
             }
         }
@@ -409,10 +408,6 @@ vx_status ownGraphProcessCopyMoveNodes(vx_graph graph)
                         ownReassignGraphParameter(graph, node, 0, first, (vx_enum)VX_INPUT);
                         /* re-start the loop */
                         break;
-                    }
-                    else
-                    {
-                        /* status will be reported */;
                     }
                 }
             }
@@ -490,10 +485,6 @@ vx_status ownGraphProcessCopyMoveNodes(vx_graph graph)
                             /* restart the loop */
                             break;
                         }
-                    }
-                    else
-                    {
-                        /*do nothing*/
                     }
                 }
             }

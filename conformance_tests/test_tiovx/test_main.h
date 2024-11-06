@@ -120,7 +120,7 @@ TESTCASE(tivxNestedUserNode)
 TESTCASE(tivxTgKnl)
 TESTCASE(bpExtStandardNodes)
 TESTCASE(bpExtFramework)
+TESTCASE(tivxImage2)
 TESTCASE(copySwap)
 TESTCASE(supplementary_data)
-TESTCASE(tivxImage2)
 #endif

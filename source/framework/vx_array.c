@@ -19,7 +19,7 @@
 #include <vx_internal.h>
 
 static void ownInitArrayObject(
-    vx_array arr, vx_enum item_type, vx_size capacity, vx_bool is_virtual); 
+    vx_array arr, vx_enum item_type, vx_size capacity, vx_bool is_virtual);
 static vx_size ownGetArrayItemSize(vx_context context, vx_enum item_type);
 static vx_bool ownIsValidArrayItemType(vx_context context, vx_enum item_type);
 static vx_bool ownIsValidInputAndOutputArrays(vx_array input, vx_array output);
@@ -326,6 +326,7 @@ VX_API_ENTRY vx_array VX_API_CALL vxCreateVirtualArray(
             }
         }
     }
+
     return (arr);
 }
 

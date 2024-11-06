@@ -258,6 +258,7 @@ static vx_reference ownCreatePyramidFromExemplar(
     if ((vx_enum)VX_SUCCESS == vxGetStatus((vx_reference)pmd))
     {
         vx_uint32 i;
+        vx_status status = (vx_enum)VX_SUCCESS;
         for (i = 0; (i < levels) && ((vx_enum)VX_SUCCESS == status); ++i)
         {
             if (exemplar->img[i]->base.supplementary_data)

@@ -67,9 +67,11 @@
 User Data Object HELPER FUNCTIONS
 =============================================================================*/
 
-static vx_status ownInitUserDataObjectObject(vx_user_data_object user_data_object, const vx_char* type_name, vx_size size);
+static vx_status ownInitUserDataObjectObject(
+    vx_user_data_object user_data_object, const vx_char* type_name, vx_size size);
 
-static vx_status ownInitUserDataObjectObject(vx_user_data_object user_data_object, const vx_char* type_name, vx_size size)
+static vx_status ownInitUserDataObjectObject(
+    vx_user_data_object user_data_object, const vx_char* type_name, vx_size size)
 {
     vx_uint32 i;
     tivx_obj_desc_user_data_object_t *obj_desc = NULL;
@@ -166,7 +168,6 @@ vx_user_data_object ownCreateUserDataObject(
     const void *ptr,
     vx_bool is_virtual)
 {
-    vx_status status = (vx_status)VX_SUCCESS;
     vx_user_data_object user_data_object = NULL;
     vx_reference ref = NULL;
     vx_context context;
@@ -373,6 +374,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxSetUserDataObjectAttribute(
                 break;
         }
     }
+
     return status;
 }
 

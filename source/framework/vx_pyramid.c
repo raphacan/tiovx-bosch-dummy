@@ -247,8 +247,9 @@ VX_API_ENTRY vx_pyramid VX_API_CALL vxCreatePyramid(
                     {
                         prmd->img[i] = NULL;
                     }
+
                     status = ownInitPyramid(prmd);
-                    
+
                     if ((vx_status)VX_SUCCESS != status)
                     {
                         (void)vxReleasePyramid(&prmd);

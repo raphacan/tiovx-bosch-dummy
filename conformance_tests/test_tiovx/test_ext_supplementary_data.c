@@ -63,11 +63,8 @@
 #include <TI/tivx_obj_desc.h>
 #include <VX/vx_khr_supplementary_data.h>
 #include <VX/vx_khr_swap_move.h>
-#include <TI/tivx_supp_ref_data.h>
+#include <TI/tivx_ext_suppl_data.h>
 #include <VX/vxu.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <TI/tivx_target_kernel.h>
 
 
@@ -906,7 +903,7 @@ TEST(supplementary_data, testExemplars)
     vx_object_array array = vxCreateObjectArray(context, (vx_reference)(images[0]), 3);
     /* Each of the objects should have been created with supplementary data from the exemplar */
     status = VX_SUCCESS;
-    for (i = 0; (i < 3) && ((vx_enum)VX_SUCCESS == status); ++i)
+    for (i = 0; (i < 3) && ((vx_status)VX_SUCCESS == status); ++i)
     {
         vx_reference ref = vxGetObjectArrayItem(array, i);
         vx_user_data_object supp = vxGetSupplementaryUserDataObject(ref, "user_data_t", &status);
@@ -926,7 +923,7 @@ TEST(supplementary_data, testExemplars)
     vx_delay delay = vxCreateDelay(context, (vx_reference)(images[0]), 3);
     /* Each of the objects should have been created with supplementary data from the exemplar */
     status = (vx_enum)VX_SUCCESS;
-    for (i = 0; (i < 3) && ((vx_enum)VX_SUCCESS == status); ++i)
+    for (i = 0; (i < 3) && ((vx_status)VX_SUCCESS == status); ++i)
     {
         vx_reference ref = vxGetReferenceFromDelay(delay, i);
         vx_user_data_object supp = vxGetSupplementaryUserDataObject(ref, "user_data_t", &status);
@@ -992,7 +989,7 @@ TEST(supplementary_data, testExemplars)
     EXPECT_VX_OBJECT(array, VX_TYPE_OBJECT_ARRAY);
     /* Each of the pyramids should have been created with supplementary data at each of their levels as well as in the pyramid */
     status = VX_SUCCESS;
-    for (i = 0; (i < 3) && ((vx_enum)VX_SUCCESS == status); ++i)
+    for (i = 0; (i < 3) && ((vx_status)VX_SUCCESS == status); ++i)
     {
         vx_reference ref = vxGetObjectArrayItem(array, i);
         EXPECT_VX_REFERENCE(ref);
@@ -1003,7 +1000,7 @@ TEST(supplementary_data, testExemplars)
         {
             status = VX_ERROR_INVALID_VALUE;
         }
-        for (int j = 0; (j < 3) && ((vx_enum)VX_SUCCESS == status); ++j)
+        for (int j = 0; (j < 3) && ((vx_status)VX_SUCCESS == status); ++j)
         {
             vx_image img = vxGetPyramidLevel((vx_pyramid)ref, j);
             EXPECT_VX_OBJECT(img, VX_TYPE_IMAGE);
@@ -1105,8 +1102,8 @@ TEST(supplementary_data, testCopySwapMove)
         }
     }
     ERROR_CHECK_VX_SUCCESS(status, "Supplementary data swapped when objects swapped in a graph");
-    vxReleaseNode(&node);
-    vxReleaseGraph(&graph);
+    VX_CALL(vxReleaseNode(&node));
+    VX_CALL(vxReleaseGraph(&graph));
 
     graph = vxCreateGraph(context);
     node = vxCopyNode(graph, (vx_reference)(matrix1), (vx_reference)(matrix2));
@@ -1122,13 +1119,13 @@ TEST(supplementary_data, testCopySwapMove)
         }
     }
     ERROR_CHECK_VX_SUCCESS(status, "Supplementary data copied when objects copied in a graph");
-    vxReleaseNode(&node);
-    vxReleaseGraph(&graph);
+    VX_CALL(vxReleaseNode(&node));
+    VX_CALL(vxReleaseGraph(&graph));
 
-    vxReleaseUserDataObject(&supp1);
-    vxReleaseUserDataObject(&supp2);
-    vxReleaseMatrix(&matrix1);
-    vxReleaseMatrix(&matrix2);
+    VX_CALL(vxReleaseUserDataObject(&supp1));
+    VX_CALL(vxReleaseUserDataObject(&supp2));
+    VX_CALL(vxReleaseMatrix(&matrix1));
+    VX_CALL(vxReleaseMatrix(&matrix2));
 
     /* Now check object arrays of pyramids */
     vx_pyramid pyr_ex1 = vxCreatePyramid(context, 4, VX_SCALE_PYRAMID_HALF, 32, 32, VX_DF_IMAGE_U8);
@@ -1363,14 +1360,14 @@ TEST(supplementary_data, testObjectDescriptors)
     ERROR_CHECK_VX_SUCCESS(vxSetParameterByIndex(node, 3, (vx_reference)(output)), NULL);
     //ERROR_CHECK_VX_SUCCESS(vxProcessGraph(graph), NULL);
     vx_status status = vxProcessGraph(graph);
-    vxReleaseKernel(&kernel);
-    vxReleaseImage(&subimage);
-    vxReleaseImage(&image);
-    vxReleaseImage(&image1);
-    vxReleaseImage(&output);
-    vxReleaseUserDataObject(&exemplar);
-    vxReleaseNode(&node);
-    vxReleaseGraph(&graph);
+    VX_CALL(vxReleaseKernel(&kernel));
+    VX_CALL(vxReleaseImage(&subimage));
+    VX_CALL(vxReleaseImage(&image));
+    VX_CALL(vxReleaseImage(&image1));
+    VX_CALL(vxReleaseImage(&output));
+    VX_CALL(vxReleaseUserDataObject(&exemplar));
+    VX_CALL(vxReleaseNode(&node));
+    VX_CALL(vxReleaseGraph(&graph));
     tivxRemoveTargetKernelGeneral();
 }
 
@@ -1411,17 +1408,17 @@ TEST(supplementary_data, testReadOnlyObjects)
     vx_node node2 = dumbCopyNode(graph, virt, output2);
     ERROR_CHECK_VX_SUCCESS(vxProcessGraph(graph), NULL);
     ERROR_EXPECT_STATUS(vxSetSupplementaryUserDataObject((vx_reference)(virt), exemplar), VX_ERROR_OPTIMIZED_AWAY, "Correctly failed to set supplementary data on virtual object outside graph after graph processing");
-    vxReleaseKernel(&kernel);
-    vxReleaseImage(&subimage);
-    vxReleaseImage(&image);
-    vxReleaseImage(&virt);
-    vxReleaseImage(&output1);
-    vxReleaseImage(&output2);
-    vxReleaseUserDataObject(&exemplar);
-    vxReleaseUserDataObject(&childSupp);
-    vxReleaseNode(&node);
-    vxReleaseNode(&node2);
-    vxReleaseGraph(&graph);
+    VX_CALL(vxReleaseKernel(&kernel));
+    VX_CALL(vxReleaseImage(&subimage));
+    VX_CALL(vxReleaseImage(&image));
+    VX_CALL(vxReleaseImage(&virt));
+    VX_CALL(vxReleaseImage(&output1));
+    VX_CALL(vxReleaseImage(&output2));
+    VX_CALL(vxReleaseUserDataObject(&exemplar));
+    VX_CALL(vxReleaseUserDataObject(&childSupp));
+    VX_CALL(vxReleaseNode(&node));
+    VX_CALL(vxReleaseNode(&node2));
+    VX_CALL(vxReleaseGraph(&graph));
     tivxRemoveTargetKernelGeneral();
 }
 

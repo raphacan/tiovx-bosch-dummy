@@ -477,14 +477,14 @@ int32_t tivx_obj_desc_strncmp_delim(volatile void *dst, volatile void *src, uint
 VX_API_ENTRY tivx_obj_desc_user_data_object_t * tivxGetSupplementaryDataObjDesc(tivx_obj_desc_t * obj_desc, const char * type_name)
 {
     tivx_obj_desc_user_data_object_t * rod = NULL;
-    if (!obj_desc)
+    if (NULL == obj_desc)
     {
         VX_PRINT(VX_ZONE_WARNING, "NULL object descriptor\n");
     }
     else
     {
         tivx_obj_desc_t * new_desc = obj_desc;
-        while (TIVX_OBJ_DESC_INVALID == new_desc->supp_data_ID)
+        while ((uint16_t)TIVX_OBJ_DESC_INVALID == new_desc->supp_data_ID)
         {
             tivx_obj_desc_t * parent = NULL;
             if (TIVX_OBJ_DESC_IMAGE == new_desc->type)
@@ -505,10 +505,10 @@ VX_API_ENTRY tivx_obj_desc_user_data_object_t * tivxGetSupplementaryDataObjDesc(
             }
         }
         rod = (tivx_obj_desc_user_data_object_t *)ownObjDescGet(new_desc->supp_data_ID);
-        if (rod)
+        if (NULL != rod)
         {
-            if (NULL != type_name &&
-                tivx_obj_desc_strncmp(rod->type_name, (volatile void*)type_name, VX_MAX_REFERENCE_NAME)
+            if ((NULL != type_name) &&
+                (tivx_obj_desc_strncmp(rod->type_name, (volatile void*)type_name, VX_MAX_REFERENCE_NAME))
                )
             {
                 VX_PRINT(VX_ZONE_INFO, "Type mismatch for supplementary data. Expected user type \"%s\"; got \"%s\"\n", type_name, rod->type_name);

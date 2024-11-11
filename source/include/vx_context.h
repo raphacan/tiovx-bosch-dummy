@@ -44,7 +44,6 @@ extern "C" {
 */
 #define TIVX_CONTEXT_MAX_NONLINEAR_DIM (9)
 
-
 /*! \brief Context used while sorting a graph
  * \ingroup group_vx_context
  */

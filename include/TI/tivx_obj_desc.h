@@ -133,13 +133,13 @@ extern "C" {
  */
 #define TIVX_NODE_FLAG_IS_SUPERNODE  (0x00000010u)
 
-/*! \brief flag set when kernel is called to indicate that this is an input parameter */
+/*! \brief Flag set when kernel is called to indicate that this is an input parameter */
 #define TIVX_REF_FLAG_IS_INPUT (0x00000020u)
 
-/*! \brief flag set when kernel is called to indicate that we're in the kernel function  */
+/*! \brief Flag set when kernel is called to indicate that we're in the kernel function  */
 #define TIVX_REF_FLAG_IS_IN_KERNEL (0x00000040u)
 
-/*! \brief flag set when a ref is associated with a verified graph  */
+/*! \brief Flag set when a ref is associated with a verified graph  */
 #define TIVX_REF_FLAG_IS_IN_GRAPH (0x00000080u)
 
 /*! \brief State of a node object descriptor to indicate it is IDLE

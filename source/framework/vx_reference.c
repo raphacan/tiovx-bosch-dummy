@@ -709,7 +709,7 @@ vx_status ownReleaseReferenceInt(vx_reference *pref,
         {
             tivx_reference_callback_f destructor = special_destructor;
 
-            if (NULL != ref->supplementary_data && NULL != ref->supplementary_data->base.release_callback)
+            if ((NULL != ref->supplementary_data) && NULL != (ref->supplementary_data->base.release_callback))
             {
                 (void)ref->supplementary_data->base.release_callback((vx_reference *)&ref->supplementary_data);
             }
@@ -2298,7 +2298,7 @@ VX_API_ENTRY vx_status vxExtendSupplementaryUserDataObject(vx_reference destinat
         /* Supplementary data cannot have supplementary data */
         status = (vx_status)VX_ERROR_NOT_SUPPORTED;
     }
-    else if ((vx_status)VX_TYPE_CONTEXT == destination->type)
+    else if ((vx_enum)VX_TYPE_CONTEXT == destination->type)
     {
         /* Specifically avoid issues later */
         status = (vx_status)VX_ERROR_NOT_SUPPORTED;
@@ -2310,7 +2310,6 @@ VX_API_ENTRY vx_status vxExtendSupplementaryUserDataObject(vx_reference destinat
     }
     else if (((vx_enum)VX_TYPE_USER_DATA_OBJECT == destination->type) &&
             (NULL != vxCastRefAsUserDataObject(destination, &status)->owner))
-            //((vx_user_data_object)destination)->owner)
     {
         /* Destination cannot be supplementary data of another object */
         status = (vx_status)VX_ERROR_NOT_SUPPORTED;

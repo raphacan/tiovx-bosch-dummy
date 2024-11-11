@@ -421,7 +421,7 @@ vx_status ownGraphProcessCopyMoveNodes(vx_graph graph)
     do
     {
         node_removed = (vx_bool)vx_false_e;
-        for (i = 0; (i < num_copy_move_nodes) && ((vx_enum)VX_SUCCESS == status); ++i)
+        for (i = 0; (i < num_copy_move_nodes) && ((vx_status)VX_SUCCESS == status); ++i)
         {
             vx_node node = graph->nodes[copy_move_indices[i]];
             vx_reference first = node->parameters[0];
@@ -477,7 +477,7 @@ vx_status ownGraphProcessCopyMoveNodes(vx_graph graph)
                     {
                         /* we can remove this node, propagating the input reference */
                         status = ownCopyMoveRemoveNode(graph, copy_move_indices[i], second, first);
-                        if ((vx_enum)VX_SUCCESS == status)
+                        if ((vx_status)VX_SUCCESS == status)
                         {
                             node_removed = (vx_bool)vx_true_e;
                             /* and re-make node list list */

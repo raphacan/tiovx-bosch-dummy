@@ -24,7 +24,6 @@
 extern "C" {
 #endif
 
-/* TIOVX ONLY */
 /*!
  * \brief Return the object descriptor for the supplementary data object associated with the given object descriptor
  * 
@@ -35,7 +34,6 @@ extern "C" {
  */
 VX_API_ENTRY tivx_obj_desc_user_data_object_t * tivxGetSupplementaryDataObjDesc(tivx_obj_desc_t * obj_desc, const char * type_name);
 
-/* TIOVX ONLY */
 /*!
  * \brief Set supplementary data for an object descriptor from a user data object object descriptor by copying bytes from one
  * user data object to another. The number of bytes copied is given by the VX_USER_DATA_OBJECT_VALID_SIZE attribute of the source.
@@ -52,7 +50,6 @@ VX_API_ENTRY tivx_obj_desc_user_data_object_t * tivxGetSupplementaryDataObjDesc(
  */
 VX_API_ENTRY vx_status tivxSetSupplementaryDataObjDesc(tivx_obj_desc_t * destination, const tivx_obj_desc_user_data_object_t * source);
 
-/* TIOVX ONLY */
 /* \brief Set supplementary data for an object descriptor from a user data object object descriptor by copying bytes from one
 * user data object to another, and then extend the data in the user object by copying bytes from another place.
 * \details The maximum number of bytes to copy is given by num_bytes.

@@ -67,15 +67,15 @@
 User Data Object HELPER FUNCTIONS
 =============================================================================*/
 
-static vx_status ownInitUserDataObjectObject(
+static void ownInitUserDataObjectCallbacks(vx_user_data_object user_data_object);
+static void ownInitUserDataObjectObject(
     vx_user_data_object user_data_object, const vx_char* type_name, vx_size size);
 
-static vx_status ownInitUserDataObjectObject(
+static void ownInitUserDataObjectObject(
     vx_user_data_object user_data_object, const vx_char* type_name, vx_size size)
 {
     vx_uint32 i;
     tivx_obj_desc_user_data_object_t *obj_desc = NULL;
-    vx_status status = (vx_status)VX_SUCCESS;
 
     user_data_object->owner = NULL;
     user_data_object->parent = NULL;
@@ -102,7 +102,6 @@ static vx_status ownInitUserDataObjectObject(
         user_data_object->maps[i].map_addr = NULL;
         user_data_object->maps[i].map_size = 0;
     }
-    return status;
 }
 
 static vx_status ownDestructUserDataObject(vx_reference ref)
@@ -138,6 +137,14 @@ static vx_status ownDestructUserDataObject(vx_reference ref)
         }
     }
     return (vx_status)VX_SUCCESS;
+}
+
+static void ownInitUserDataObjectCallbacks(vx_user_data_object user_data_object)
+{
+    user_data_object->base.destructor_callback = &ownDestructUserDataObject;
+    user_data_object->base.mem_alloc_callback  = &ownAllocReferenceBufferGeneric;
+    user_data_object->base.release_callback    = &ownReleaseReferenceBufferGeneric;
+    user_data_object->base.kernel_callback     = &ownKernelCallbackGeneric;
 }
 
 /*==============================================================================
@@ -197,11 +204,7 @@ vx_user_data_object ownCreateUserDataObject(
                 /* status set to NULL due to preceding type check */
                 user_data_object = vxCastRefAsUserDataObject(ref, NULL);
                 /* assign reference type specific callback's */
-                user_data_object->base.destructor_callback = &ownDestructReferenceGeneric;
-                user_data_object->base.mem_alloc_callback = &ownAllocReferenceBufferGeneric;
-                user_data_object->base.release_callback =
-                    &ownReleaseReferenceBufferGeneric;
-                user_data_object->base.kernel_callback = &ownKernelCallbackGeneric;
+                ownInitUserDataObjectCallbacks(user_data_object);
                 user_data_object->base.obj_desc = (tivx_obj_desc_t *)ownObjDescAlloc(
                     (vx_enum)TIVX_OBJ_DESC_USER_DATA_OBJECT, vxCastRefFromUserDataObject(user_data_object));
                 if(user_data_object->base.obj_desc==NULL)
@@ -219,16 +222,11 @@ vx_user_data_object ownCreateUserDataObject(
                 else
                 {
                     vx_status status;
-                    status = ownInitUserDataObjectObject(user_data_object, type_name, size);
-
-                    if(status == (vx_status)VX_SUCCESS)
+                    ownInitUserDataObjectObject(user_data_object, type_name, size);
+                    if (NULL != ptr)
                     {
-                        if (NULL != ptr)
-                        {
-                            status = vxCopyUserDataObject(user_data_object, 0, size, (void*)ptr, (vx_enum)VX_WRITE_ONLY, (vx_enum)VX_MEMORY_TYPE_HOST);
-                        }
+                        status = vxCopyUserDataObject(user_data_object, 0, size, (void*)ptr, (vx_enum)VX_WRITE_ONLY, (vx_enum)VX_MEMORY_TYPE_HOST);
                     }
-
                     if(status != (vx_status)VX_SUCCESS)
                     {
                         (void)vxReleaseUserDataObject(&user_data_object);
@@ -253,12 +251,7 @@ vx_user_data_object ownCreateReadOnlyUserDataObject(vx_user_data_object parent)
         (user_data_object->base.type == (vx_enum)VX_TYPE_USER_DATA_OBJECT))
     {
         /* assign reference type specific callback's */
-        user_data_object->base.destructor_callback =
-            (tivx_reference_destructor_callback_f)&ownDestructUserDataObject;
-        user_data_object->base.mem_alloc_callback = &ownAllocReferenceBufferGeneric;
-        user_data_object->base.release_callback =
-            (tivx_reference_release_callback_f)&ownReleaseReferenceBufferGeneric;
-        user_data_object->base.kernel_callback = &ownKernelCallbackGeneric;
+        ownInitUserDataObjectCallbacks(user_data_object);
         user_data_object->base.obj_desc = parent->base.obj_desc;
         user_data_object->parent = parent;
         vxRetainReference(&parent->base);
@@ -422,13 +415,13 @@ VX_API_ENTRY vx_status VX_API_CALL vxCopyUserDataObject(vx_user_data_object user
             status = (vx_status)VX_ERROR_INVALID_PARAMETERS;
         }
 
-        if (VX_READ_ONLY != usage &&
+        if (((vx_enum)VX_READ_ONLY != usage) &&
             (user_data_object->parent ||
              (user_data_object->owner &&
               tivxFlagIsBitSet(user_data_object->owner->obj_desc->flags, TIVX_REF_FLAG_IS_INPUT))))
         {
             VX_PRINT(VX_ZONE_ERROR, "Attempt to write to read-only data\n");
-            status = VX_ERROR_NOT_SUPPORTED;
+            status = (vx_status)VX_ERROR_NOT_SUPPORTED;
         }
 
     }
@@ -514,7 +507,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxMapUserDataObject(
             VX_PRINT(VX_ZONE_ERROR, "Invalid offset or size parameter\n");
             status = (vx_status)VX_ERROR_INVALID_PARAMETERS;
         }
-        if (VX_READ_ONLY != usage &&
+        if ((VX_READ_ONLY != usage) &&
             (user_data_object->parent ||
              (user_data_object->owner &&
               tivxFlagIsBitSet(user_data_object->owner->obj_desc->flags, TIVX_REF_FLAG_IS_INPUT))))

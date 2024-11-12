@@ -218,6 +218,7 @@ static void ownLinkParentSubimage(vx_image parent, vx_image subimage)
     /* refer to our parent image and internally refcount it */
     subimage->parent = parent;
     subimage->base.is_virtual = parent->base.is_virtual;
+    ((tivx_obj_desc_image_t *)subimage->base.obj_desc)->parent_ID = parent->base.obj_desc->obj_desc_id;
     /* it will find free space for subimage since this was checked before */
     for (p = 0; p < TIVX_IMAGE_MAX_SUBIMAGES; p++) /* TIOVX-1943- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_IMAGE_UBR004 */
     {

@@ -221,7 +221,7 @@ vx_user_data_object ownCreateUserDataObject(
                 }
                 else
                 {
-                    vx_status status;
+                    vx_status status = (vx_status)VX_SUCCESS;
                     ownInitUserDataObjectObject(user_data_object, type_name, size);
                     if (NULL != ptr)
                     {

@@ -21,7 +21,7 @@
 static vx_status ownDestructNode(vx_reference ref);
 static vx_status ownInitNodeObjDesc(vx_node node, vx_kernel kernel, uint32_t pipeline_id);
 static vx_status ownRemoveNodeInt(const vx_node *n);
-static void ownNodeUserKernelSetParamsAccesible(vx_kernel kernel, vx_reference params[], vx_uint32 num_params, vx_bool is_accessible);
+static void ownNodeUserKernelUpdateParamsFlags(vx_kernel kernel, vx_reference params[], vx_uint32 num_params, vx_bool is_accessible);
 static uint16_t ownNodeGetObjDescId(vx_node node, uint32_t pipeline_id);
 
 static vx_status ownDestructNode(vx_reference ref)
@@ -223,7 +223,7 @@ static vx_status ownRemoveNodeInt(const vx_node *n)
     return status;
 }
 
-static void ownNodeUserKernelSetParamsAccesible(vx_kernel kernel, vx_reference params[], vx_uint32 num_params, vx_bool is_accessible)
+static void ownNodeUserKernelUpdateParamsFlags(vx_kernel kernel, vx_reference params[], vx_uint32 num_params, vx_bool is_accessible)
 {
     vx_uint32 i;
     for(i=0; i<num_params ; i++)
@@ -942,11 +942,11 @@ vx_status ownNodeUserKernelExecute(vx_node node, vx_reference prm_ref[])
                             }
                         }
 
-                        ownNodeUserKernelSetParamsAccesible(node->kernel, params, num_params, (vx_bool)vx_true_e);
+                        ownNodeUserKernelUpdateParamsFlags(node->kernel, params, num_params, (vx_bool)vx_true_e);
 
                         tivxCheckStatus(&status, node->kernel->function(node, params, num_params));
 
-                        ownNodeUserKernelSetParamsAccesible(node->kernel, params, num_params, (vx_bool)vx_false_e);
+                        ownNodeUserKernelUpdateParamsFlags(node->kernel, params, num_params, (vx_bool)vx_false_e);
                     }
                 }
                 else
@@ -976,12 +976,12 @@ vx_status ownNodeUserKernelExecute(vx_node node, vx_reference prm_ref[])
                         }
                     }
 
-                    ownNodeUserKernelSetParamsAccesible(node->kernel, prm_ref, num_params, (vx_bool)vx_true_e);
+                    ownNodeUserKernelUpdateParamsFlags(node->kernel, prm_ref, num_params, (vx_bool)vx_true_e);
 
                     /* user has given user kernel function so call it */
                     status = node->kernel->function(node, prm_ref, num_params);
 
-                    ownNodeUserKernelSetParamsAccesible(node->kernel, prm_ref, num_params, (vx_bool)vx_false_e);
+                    ownNodeUserKernelUpdateParamsFlags(node->kernel, prm_ref, num_params, (vx_bool)vx_false_e);
                 }
             }
             else

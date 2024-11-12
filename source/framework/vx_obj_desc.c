@@ -495,7 +495,7 @@ VX_API_ENTRY tivx_obj_desc_user_data_object_t * tivxGetSupplementaryDataObjDesc(
             {
                 parent = ownObjDescGet(((tivx_obj_desc_image_t *)new_desc)->parent_ID);
             }
-            if (parent)
+            if (NULL != parent)
             {
                 new_desc = parent;
             }

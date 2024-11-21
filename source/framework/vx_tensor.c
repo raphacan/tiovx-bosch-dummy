@@ -210,7 +210,6 @@ static void ownInitTensorObject(
         tensor->maps[i].map_addr = NULL;
         tensor->maps[i].map_size = 0;
     }
-    ((tivx_obj_desc_tensor_t *)tensor->base.obj_desc)->parent_ID = (vx_uint16)TIVX_OBJ_DESC_INVALID;
 }
 
 static vx_status ownTensorCheckSizes(const volatile uint32_t *dimensions, const vx_size * view_start, const vx_size * view_end, vx_size number_of_dimensions)

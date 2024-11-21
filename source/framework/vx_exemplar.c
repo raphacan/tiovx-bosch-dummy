@@ -175,7 +175,7 @@ vx_reference tivxCreateReferenceFromExemplar(
         default:
             break;
     }
-    if (exemplar->supplementary_data)
+    if (NULL != exemplar->supplementary_data)
     {
         vxSetSupplementaryUserDataObject(ref, exemplar->supplementary_data);
     }

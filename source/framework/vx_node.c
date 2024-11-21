@@ -223,14 +223,14 @@ static vx_status ownRemoveNodeInt(const vx_node *n)
     return status;
 }
 
-static void ownNodeUserKernelUpdateParamsFlags(vx_kernel kernel, vx_reference params[], vx_uint32 num_params, vx_bool is_accessible)
+static void ownNodeUserKernelUpdateParamsFlags(vx_kernel kernel, vx_reference params[], vx_uint32 num_params, vx_bool kernel_entry)
 {
     vx_uint32 i;
     for(i=0; i<num_params ; i++)
     {
         if (NULL != params[i])
         {
-            if ((vx_bool)vx_true_e == is_accessible)
+            if ((vx_bool)vx_true_e == kernel_entry)
             {
                 /* Set flag to say we are in the kernel function */
                 tivxFlagBitSet(&params[i]->obj_desc->flags, TIVX_REF_FLAG_IS_IN_KERNEL);
@@ -244,7 +244,7 @@ static void ownNodeUserKernelUpdateParamsFlags(vx_kernel kernel, vx_reference pa
             }
             if ((vx_enum)VX_INPUT ==  kernel->signature.directions[i])
             {
-                if ((vx_bool)vx_true_e == is_accessible)
+                if ((vx_bool)vx_true_e == kernel_entry)
                 {
                     tivxFlagBitSet(&params[i]->obj_desc->flags, TIVX_REF_FLAG_IS_INPUT);
                 }
@@ -255,7 +255,7 @@ static void ownNodeUserKernelUpdateParamsFlags(vx_kernel kernel, vx_reference pa
             }
             if((params[i]->is_virtual != (vx_bool)vx_false_e))
             {
-                params[i]->is_accessible = is_accessible;
+                params[i]->is_accessible = kernel_entry;
             }
         }
     }

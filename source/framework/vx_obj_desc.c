@@ -489,11 +489,7 @@ VX_API_ENTRY tivx_obj_desc_user_data_object_t * tivxGetSupplementaryDataObjDesc(
             tivx_obj_desc_t * parent = NULL;
             if (TIVX_OBJ_DESC_IMAGE == new_desc->type)
             {
-                parent = ownObjDescGet(((tivx_obj_desc_image_t *)new_desc)->parent_ID);
-            }
-            else if (TIVX_OBJ_DESC_TENSOR == new_desc->type)
-            {
-                parent = ownObjDescGet(((tivx_obj_desc_image_t *)new_desc)->parent_ID);
+                parent = ownObjDescGet(((tivx_obj_desc_image_t *)new_desc)->parent_id);
             }
             if (NULL != parent)
             {

@@ -533,7 +533,7 @@ typedef struct _tivx_obj_desc_image
     /*! \brief image plane buffer size */
     volatile uint32_t mem_size[TIVX_IMAGE_MAX_PLANES];
     /*! \brief object descriptor ID of parent (if any) */
-    volatile uint16_t parent_ID;
+    volatile uint16_t parent_id;
     /*! \brief reserved for 64b alignment */
     volatile uint16_t rsv[1];
     /*! \brief the value to use to fill for a uniform image.
@@ -906,8 +906,6 @@ typedef struct _tivx_obj_desc_tensor
     volatile uint32_t stride[TIVX_CONTEXT_MAX_TENSOR_DIMS];
     /*! \brief Buffer size */
     volatile uint32_t mem_size;
-    /*! \brief object descriptor ID of parent (if any) */
-    volatile uint16_t parent_ID;
     /*! \brief alignment */
     volatile uint16_t align[1];
 } tivx_obj_desc_tensor_t;

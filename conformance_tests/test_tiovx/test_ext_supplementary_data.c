@@ -357,7 +357,7 @@ void tivxAddTargetKernelGeneral(vx_context context)
     ERROR_CHECK_VX_SUCCESS(vxFinalizeKernel(my_dumb_copy_kernel), NULL);
 }
 
-void tivxRemoveTargetKernelGeneral(void)
+void testRemoveTargetKernelGeneral(void)
 {
     if (target_kernel != NULL)
     {
@@ -563,13 +563,15 @@ vx_reference createRef(vx_context context, vx_enum type)
 TEST (supplementary_data, testRefCount)
 {
     vx_context context = context_->vx_context_;
+    vx_user_data_object exemplar;
+    vx_reference test_object;
 
     user_data_t user_data = {.numbers = {1, 2, 3, 4}};
-    vx_user_data_object exemplar = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data);
+    ASSERT_VX_OBJECT(exemplar = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data));
     vx_status status = (vx_status)VX_SUCCESS;
 
     /* First, set supplementary data on an object */
-    vx_reference test_object = (vx_reference)vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8);
+    ASSERT_VX_OBJECT(test_object = (vx_reference)vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8));
     EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxSetSupplementaryUserDataObject(test_object, exemplar));
     VX_CALL(vxReleaseUserDataObject(&exemplar));
 
@@ -604,6 +606,7 @@ void testOneType(vx_context context, vx_enum type)
 {
     vx_reference ref = createRef(context, type);
     vx_status status = VX_SUCCESS;
+    vx_user_data_object exemplar;
     vx_user_data_object supp = vxGetSupplementaryUserDataObject(ref, NULL, &status);
     if ( status == (vx_status)VX_SUCCESS)
     {
@@ -612,7 +615,7 @@ void testOneType(vx_context context, vx_enum type)
     EXPECT_NE_VX_STATUS(VX_SUCCESS, status);
 
     user_data_t user_data = {.numbers = {1, 2, 3, 4}};
-    vx_user_data_object exemplar = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data);
+    ASSERT_VX_OBJECT(exemplar = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data));
     status = vxSetSupplementaryUserDataObject(ref, exemplar);
     if (status != (vx_status)VX_SUCCESS)
     {
@@ -655,14 +658,15 @@ TEST(supplementary_data, testInvalidTypes)
     /* This is a negative test for types that should never ever be supported: vx_context, vx_graph
        Basically it covers some error code in the implementation
     */
+   vx_user_data_object exemplar, supp;
     vx_context context = context_->vx_context_;
     printf("\nNegative tests for disallowed types\n");
 
     vx_graph graph = vxCreateGraph(context);
     user_data_t user_data = {.numbers = {1, 2, 3, 4}};
-    vx_user_data_object exemplar = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data);
+    ASSERT_VX_OBJECT(exemplar = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data));
     vx_status status = VX_SUCCESS;
-    vx_user_data_object supp = vxGetSupplementaryUserDataObject((vx_reference)context, NULL, &status);
+    ASSERT_VX_OBJECT(supp = vxGetSupplementaryUserDataObject((vx_reference)context, NULL, &status));
     if (status == (vx_status)VX_SUCCESS)
     {
         printf("no supplementary available, should not be possible to get it\n");
@@ -696,22 +700,25 @@ TEST(supplementary_data, testInvalidTypes)
 /* test get and set error conditions */
 TEST(supplementary_data, testGetSetErrors)
 {
+    vx_user_data_object exemplar, supp;
+    vx_image virtualImage;
+
     vx_context context = context_->vx_context_;
     printf("\nChecking error codes for vxGetSupplementaryUserDataObject and vxSetSupplementaryUserDataObject\n");
     user_data_t user_data = {.numbers = {1, 2, 3, 4}};
-    vx_user_data_object exemplar = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data);
+    ASSERT_VX_OBJECT(exemplar = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data));
     /* First, set supplementary data on an object */
     vx_image image = vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8);
     EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxSetSupplementaryUserDataObject((vx_reference)image, exemplar));
 
     /* Now, check that we can't retrieve from an invalid reference */
     vx_status status = VX_SUCCESS;
-    vx_user_data_object supp = vxGetSupplementaryUserDataObject((vx_reference)&user_data, NULL, &status);
+    ASSERT_VX_OBJECT(supp = vxGetSupplementaryUserDataObject((vx_reference)&user_data, NULL, &status));
     EXPECT_EQ_VX_STATUS(VX_ERROR_INVALID_REFERENCE, status);
 
     /* Now, check for virtual objects */
     vx_graph graph = vxCreateGraph(context);
-    vx_image virtualImage = vxCreateVirtualImage(graph, 0, 0, VX_DF_IMAGE_U8);
+    ASSERT_VX_OBJECT(virtualImage = vxCreateVirtualImage(graph, 0, 0, VX_DF_IMAGE_U8));
     supp = vxGetSupplementaryUserDataObject((vx_reference)virtualImage, NULL, &status);
     EXPECT_EQ_VX_STATUS(VX_ERROR_OPTIMIZED_AWAY, status);
 
@@ -736,8 +743,9 @@ TEST(supplementary_data, testGetSetErrors)
     EXPECT_EQ_VX_STATUS(VX_SUCCESS, status);
 
     /* Now check vxSetSupplementaryUserDataObject */
-    vx_user_data_object wrong_data =  vxCreateUserDataObject(context, "wrong data", sizeof(user_data_t), &user_data);
-    vx_user_data_object invalid_user_data_object = (vx_user_data_object)image;
+    vx_user_data_object wrong_data, invalid_user_data_object;
+    ASSERT_VX_OBJECT(wrong_data =  vxCreateUserDataObject(context, "wrong data", sizeof(user_data_t), &user_data));
+    ASSERT_VX_OBJECT(invalid_user_data_object = (vx_user_data_object)image);
     vx_reference invalid_reference = (vx_reference)&user_data;
     /* Source not a vx_user_data_object" */
     status = vxSetSupplementaryUserDataObject((vx_reference)image, invalid_user_data_object);
@@ -846,18 +854,20 @@ void testParentAndChild(vx_reference parent, vx_reference child, const char * ms
 /* Test child image of image, child tensor of image, child image of tensor, child tensor of tensor, grandchild image */
 TEST(supplementary_data, testChildren)
 {
+    vx_user_data_object exemplar;
+    vx_image imageFromROI, grandchildImageFromImage;
     vx_context context = context_->vx_context_;
     vx_status status = VX_SUCCESS;
     printf("\nTesting inheritance for images and tensors\n");
     user_data_t user_data = {.numbers = {1, 2, 3, 4}};
-    vx_user_data_object exemplar = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data);
+    ASSERT_VX_OBJECT(exemplar = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data));
     vx_size dims[] = {10, 10, 3};
     vx_tensor tensor = vxCreateTensor(context, 3, dims, VX_TYPE_UINT8, 0);
     vx_image image = vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8);
     vx_rectangle_t rect = {.start_x = 0, .start_y = 0, .end_x = 9, .end_y = 9};
     EXPECT_EQ_VX_STATUS(VX_SUCCESS, status);
-    vx_image imageFromROI = vxCreateImageFromROI(image, &rect);
-    vx_image grandchildImageFromImage = vxCreateImageFromROI(imageFromROI, &rect);
+    ASSERT_VX_OBJECT(imageFromROI = vxCreateImageFromROI(image, &rect));
+    ASSERT_VX_OBJECT(grandchildImageFromImage = vxCreateImageFromROI(imageFromROI, &rect));
     EXPECT_EQ_VX_STATUS(VX_SUCCESS, status);
     /* That's all the objects created, they do not have supplementary data, add it to the parents */
     //EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxSetSupplementaryUserDataObject((vx_reference)tensor, exemplar));
@@ -874,7 +884,8 @@ TEST(supplementary_data, testChildren)
 
 vx_node dumbCopyNode(vx_graph graph, vx_image in, vx_image out)
 {
-    vx_node node = vxCreateGenericNode(graph, my_dumb_copy_kernel);
+    vx_node node;
+    ASSERT_VX_OBJECT(node = vxCreateGenericNode(graph, my_dumb_copy_kernel));
     EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxSetParameterByIndex(node, 0, (vx_reference)in));
     EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxSetParameterByIndex(node, 1, (vx_reference)out));
     return node;
@@ -883,12 +894,13 @@ vx_node dumbCopyNode(vx_graph graph, vx_image in, vx_image out)
 /* Test object arrays, delays, pipelined interstitial objects */
 TEST(supplementary_data, testExemplars)
 {
+    vx_user_data_object exemplar;
     vx_context context = context_->vx_context_;
     tivxAddTargetKernelGeneral(context);
     printf("\nTesting exemplars\n");
     vx_status status = VX_SUCCESS;
     user_data_t user_data = {.numbers = {1, 2, 3, 4}};
-    vx_user_data_object exemplar = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data);
+    ASSERT_VX_OBJECT(exemplar = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data));
     vx_image images[] = {
         vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8),
         vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8),
@@ -900,7 +912,8 @@ TEST(supplementary_data, testExemplars)
     {
         EXPECT_EQ_VX_STATUS(VX_SUCCESS, vxSetSupplementaryUserDataObject((vx_reference)images[i], exemplar));
     }
-    vx_object_array array = vxCreateObjectArray(context, (vx_reference)(images[0]), 3);
+    vx_object_array array;
+    ASSERT_VX_OBJECT(array = vxCreateObjectArray(context, (vx_reference)(images[0]), 3));
     /* Each of the objects should have been created with supplementary data from the exemplar */
     status = VX_SUCCESS;
     for (i = 0; (i < 3) && ((vx_status)VX_SUCCESS == status); ++i)
@@ -920,7 +933,8 @@ TEST(supplementary_data, testExemplars)
     EXPECT_EQ_VX_STATUS(VX_SUCCESS, status);
     VX_CALL(vxReleaseObjectArray(&array));
     
-    vx_delay delay = vxCreateDelay(context, (vx_reference)(images[0]), 3);
+    vx_delay delay;
+    ASSERT_VX_OBJECT(delay = vxCreateDelay(context, (vx_reference)(images[0]), 3));
     /* Each of the objects should have been created with supplementary data from the exemplar */
     status = (vx_enum)VX_SUCCESS;
     for (i = 0; (i < 3) && ((vx_status)VX_SUCCESS == status); ++i)
@@ -941,7 +955,8 @@ TEST(supplementary_data, testExemplars)
     VX_CALL(vxReleaseDelay(&delay));
     /* Now check that objects are correctly created as required for pipelined or batched graphs */
     vx_graph graph = vxCreateGraph(context);
-    vx_image virt = vxCreateVirtualImage(graph, 10, 10, VX_DF_IMAGE_U8);
+    vx_image virt;
+    ASSERT_VX_OBJECT(virt = vxCreateVirtualImage(graph, 10, 10, VX_DF_IMAGE_U8));
     vx_node node1 = dumbCopyNode(graph, images[0], virt);
     vx_node node2 = dumbCopyNode(graph, virt, images[2]);
     addParameterToGraph(graph, node1, 0);
@@ -1029,7 +1044,7 @@ TEST(supplementary_data, testExemplars)
     VX_CALL(vxReleaseNode(&node1));
     VX_CALL(vxReleaseNode(&node2));
     VX_CALL(vxReleaseGraph(&graph));
-    tivxRemoveTargetKernelGeneral();
+    testRemoveTargetKernelGeneral();
 }
 
 /* Test Copy, Swap, Move */
@@ -1039,11 +1054,13 @@ TEST(supplementary_data, testCopySwapMove)
     printf("\nTesting copy and swap\n");
     vx_status status = VX_SUCCESS;
     user_data_t user_data1 = {.numbers = {1, 2, 3, 4}};
-    vx_user_data_object exemplar1 = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data1);
+    vx_user_data_object exemplar1, exemplar2;
+    ASSERT_VX_OBJECT(exemplar1 = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data1));
     user_data_t user_data2 = {.numbers = {11, 12, 13, 14}};
-    vx_user_data_object exemplar2 = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data2);
-    vx_matrix matrix1 = vxCreateMatrixFromPattern(context, VX_PATTERN_BOX, 3, 3);
-    vx_matrix matrix2 = vxCreateMatrixFromPattern(context, VX_PATTERN_BOX, 3, 3);
+    ASSERT_VX_OBJECT(exemplar2 = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data2));
+    vx_matrix matrix1, matrix2;
+    ASSERT_VX_OBJECT(matrix1 = vxCreateMatrixFromPattern(context, VX_PATTERN_BOX, 3, 3));
+    ASSERT_VX_OBJECT(matrix2 = vxCreateMatrixFromPattern(context, VX_PATTERN_BOX, 3, 3));
     
     ERROR_CHECK_VX_SUCCESS(vxSetSupplementaryUserDataObject((vx_reference)(matrix1), exemplar1), NULL);
     ERROR_CHECK_VX_SUCCESS(vxSetSupplementaryUserDataObject((vx_reference)(matrix2), exemplar2), NULL);
@@ -1128,7 +1145,8 @@ TEST(supplementary_data, testCopySwapMove)
     VX_CALL(vxReleaseMatrix(&matrix2));
 
     /* Now check object arrays of pyramids */
-    vx_pyramid pyr_ex1 = vxCreatePyramid(context, 4, VX_SCALE_PYRAMID_HALF, 32, 32, VX_DF_IMAGE_U8);
+    vx_pyramid pyr_ex1;
+    ASSERT_VX_OBJECT(pyr_ex1 = vxCreatePyramid(context, 4, VX_SCALE_PYRAMID_HALF, 32, 32, VX_DF_IMAGE_U8));
     ERROR_CHECK_VX_SUCCESS(vxSetSupplementaryUserDataObject((vx_reference)(pyr_ex1), exemplar1), NULL);
     for (int i = 0; i < 4; ++i)
     {
@@ -1136,9 +1154,11 @@ TEST(supplementary_data, testCopySwapMove)
         vxSetSupplementaryUserDataObject((vx_reference)(img), exemplar1);
         vxReleaseImage(&img);
     }
-    vx_object_array arr1 = vxCreateObjectArray(context, (vx_reference)(pyr_ex1), 4);
+    vx_object_array arr1;
+    ASSERT_VX_OBJECT(arr1 = vxCreateObjectArray(context, (vx_reference)(pyr_ex1), 4));
     ERROR_CHECK_VX_SUCCESS(vxSetSupplementaryUserDataObject((vx_reference)(arr1), exemplar1), NULL);
-    vx_pyramid pyr_ex2 = vxCreatePyramid(context, 4, VX_SCALE_PYRAMID_HALF, 32, 32, VX_DF_IMAGE_U8);
+    vx_pyramid pyr_ex2;
+    ASSERT_VX_OBJECT(pyr_ex2 = vxCreatePyramid(context, 4, VX_SCALE_PYRAMID_HALF, 32, 32, VX_DF_IMAGE_U8));
     ERROR_CHECK_VX_SUCCESS(vxSetSupplementaryUserDataObject((vx_reference)(pyr_ex2), exemplar2), NULL);
     for (int i = 0; i < 4; ++i)
     {
@@ -1146,7 +1166,8 @@ TEST(supplementary_data, testCopySwapMove)
         vxSetSupplementaryUserDataObject((vx_reference)(img), exemplar2);
         vxReleaseImage(&img);
     }
-    vx_object_array arr2 = vxCreateObjectArray(context, (vx_reference)(pyr_ex2), 4);
+    vx_object_array arr2;
+    ASSERT_VX_OBJECT(arr2 = vxCreateObjectArray(context, (vx_reference)(pyr_ex2), 4));
     ERROR_CHECK_VX_SUCCESS(vxSetSupplementaryUserDataObject((vx_reference)(arr2), exemplar2), NULL);
     supp1 = vxGetSupplementaryUserDataObject((vx_reference)(arr1), NULL, &status);
     ERROR_CHECK_VX_SUCCESS(status , NULL);
@@ -1236,10 +1257,13 @@ TEST(supplementary_data, testExtend)
     vx_context context = context_->vx_context_;
     printf("\nTesting vxExtendSupplementaryUserDataObject\n");
     user_data_t user_data = {.numbers = {1, 2, 3, 4}};
-    vx_user_data_object exemplar = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data);
-    vx_image image = vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8);
+    vx_user_data_object exemplar;
+    ASSERT_VX_OBJECT(exemplar = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data));
+    vx_image image;
+    ASSERT_VX_OBJECT(image = vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8));
     vx_rectangle_t rect = {.start_x = 0, .start_y = 0, .end_x = 9, .end_y = 9};
-    vx_image subimage = vxCreateImageFromROI(image, &rect);
+    vx_image subimage;
+    ASSERT_VX_OBJECT(subimage = vxCreateImageFromROI(image, &rect));
     user_data_t new_data = {.numbers = {10, 11, 12, 13}};
     user_data_t read_data = {0};
     vx_status status = VX_SUCCESS;
@@ -1341,13 +1365,18 @@ TEST(supplementary_data, testObjectDescriptors)
     tivxAddTargetKernelGeneral(context);
     printf("\nTesting Object Descriptors\n");
     user_data_t user_data = {.numbers = {1, 2, 3, 4}};
-    vx_user_data_object exemplar = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data);
-    vx_image image = vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8);
-    vx_image image1 = vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8);
+    vx_user_data_object exemplar;
+    ASSERT_VX_OBJECT(exemplar = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data));
+    vx_image image;
+    ASSERT_VX_OBJECT(image = vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8));
+    vx_image image1;
+    ASSERT_VX_OBJECT(image1 = vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8));
     vx_rectangle_t rect = {.start_x = 0, .start_y = 0, .end_x = 9, .end_y = 9};
-    vx_image subimage = vxCreateImageFromROI(image, &rect);
+    vx_image subimage;
+    ASSERT_VX_OBJECT(subimage = vxCreateImageFromROI(image, &rect));
     ERROR_CHECK_VX_SUCCESS(vxSetSupplementaryUserDataObject((vx_reference)(image), exemplar), NULL);
-    vx_image output = vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8);
+    vx_image output;
+    ASSERT_VX_OBJECT(output = vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8));
     ERROR_CHECK_VX_SUCCESS(vxSetSupplementaryUserDataObject((vx_reference)(output), exemplar), NULL);
     vx_graph graph = vxCreateGraph(context);
     vx_kernel kernel = vxGetKernelByEnum(context, MY_USER_TEST_TARGET_KERNEL);
@@ -1368,7 +1397,7 @@ TEST(supplementary_data, testObjectDescriptors)
     VX_CALL(vxReleaseUserDataObject(&exemplar));
     VX_CALL(vxReleaseNode(&node));
     VX_CALL(vxReleaseGraph(&graph));
-    tivxRemoveTargetKernelGeneral();
+    testRemoveTargetKernelGeneral();
 }
 
 /* Test read-only input parameters and child objects
@@ -1381,22 +1410,28 @@ TEST(supplementary_data, testReadOnlyObjects)
     printf("\nTesting read-only input parameters and child objects\n");
     vx_status status = VX_SUCCESS;
     user_data_t user_data = {.numbers = {1, 2, 3, 4}};
-    vx_user_data_object exemplar = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data);
-    vx_image image = vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8);
+    vx_user_data_object exemplar;
+    ASSERT_VX_OBJECT(exemplar = vxCreateUserDataObject(context, "user_data_t", sizeof(user_data_t), &user_data));
+    vx_image image;
+    ASSERT_VX_OBJECT(image = vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8));
     vx_rectangle_t rect = {.start_x = 0, .start_y = 0, .end_x = 9, .end_y = 9};
-    vx_image subimage = vxCreateImageFromROI(image, &rect);
+    vx_image subimage;
+    ASSERT_VX_OBJECT(subimage = vxCreateImageFromROI(image, &rect));
     ERROR_CHECK_VX_SUCCESS(vxSetSupplementaryUserDataObject((vx_reference)(image), exemplar), NULL);
-    vx_user_data_object childSupp = vxGetSupplementaryUserDataObject((vx_reference)(subimage), NULL, &status);
+    vx_user_data_object childSupp;
+    ASSERT_VX_OBJECT(childSupp = vxGetSupplementaryUserDataObject((vx_reference)(subimage), NULL, &status));
     EXPECT_EQ_VX_STATUS(VX_SUCCESS, status);
     vx_size size = sizeof(user_data_t);
     vx_map_id map_id;
     void *ptr;
     ERROR_EXPECT_STATUS_BAD(vxSetUserDataObjectAttribute(childSupp, VX_USER_DATA_OBJECT_VALID_SIZE, &size, sizeof(size)), "Cannot set attribute of read-only supplementary data");
     ERROR_EXPECT_STATUS_BAD(vxMapUserDataObject(childSupp, 0, size, &map_id, &ptr, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST, 0), "Cannot map read-only supplementary data for writing");
-    vx_image output1 = vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8);
-    vx_image output2 = vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8);
+    vx_image output1, output2;
+    ASSERT_VX_OBJECT(output1 = vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8));
+    ASSERT_VX_OBJECT(output2 = vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8));
     vx_graph graph = vxCreateGraph(context);
-    vx_image virt = vxCreateVirtualImage(graph, 10, 10, VX_DF_IMAGE_U8);
+    vx_image virt;
+    ASSERT_VX_OBJECT(virt = vxCreateVirtualImage(graph, 10, 10, VX_DF_IMAGE_U8));
     vx_kernel kernel = vxGetKernelByEnum(context, MY_USER_TEST_KERNEL);
     EXPECT_VX_OBJECT(kernel, VX_TYPE_KERNEL);
     vx_node node = vxCreateGenericNode(graph, kernel);
@@ -1419,7 +1454,7 @@ TEST(supplementary_data, testReadOnlyObjects)
     VX_CALL(vxReleaseNode(&node));
     VX_CALL(vxReleaseNode(&node2));
     VX_CALL(vxReleaseGraph(&graph));
-    tivxRemoveTargetKernelGeneral();
+    testRemoveTargetKernelGeneral();
 }
 
 TESTCASE_TESTS(supplementary_data,

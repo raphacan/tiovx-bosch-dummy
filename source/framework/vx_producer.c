@@ -962,7 +962,9 @@ static void* producer_broadcast_thread(void* arg)
                 if (l_inGraph != NULL)
                 {
                     status = producer->streaming_cb.dequeueCallback(producer->graph_obj, dequeued_refs, &num_ready);
+#ifdef IPPC_SHEM_ENABLED
                     producer->connection_check_polling_exit = vx_true_e; 
+#endif
                     if (status != (vx_status)VX_SUCCESS)
                     {
                         break;
@@ -1270,10 +1272,10 @@ static vx_status ownInitProducerObject(vx_producer producer, const vx_producer_p
     producer->numBufferRefsExport           = params->num_buffer_refs_export;
     producer->maxRefsLockedByClient         = params->max_refs_locked_by_client;
     producer->streaming_cb                  = params->streaming_cb;
+#ifdef IPPC_SHEM_ENABLED        
     producer->connection_check_polling_time = params->connection_check_polling_time;
     producer->connection_check_polling_exit = vx_false_e; 
 
-#ifdef IPPC_SHEM_ENABLED
     for(vx_uint32 idx = 0U; idx < IPPC_PORT_COUNT; idx++)
     {
         producer->ippc_port[idx] = params->ippc_port[idx];
@@ -1433,11 +1435,12 @@ VX_API_ENTRY vx_status VX_API_CALL vxProducerStart(vx_producer producer)
     {
         VX_PRINT(VX_ZONE_ERROR, "error creating producer_broadcast_thread! \n");
     }
+#ifdef IPPC_SHEM_ENABLED
     else
     {
         thread_status = pthread_create(&producer->connection_check_thread, NULL, producer_connection_check_thread, (void*)producer);
     }
-    
+#endif
     return ((vx_status)thread_status);
 }
 

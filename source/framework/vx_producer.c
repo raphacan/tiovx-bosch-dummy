@@ -926,8 +926,7 @@ static void* producer_broadcast_thread(void* arg)
         {
             case VX_PROD_STATE_INIT:
             {
-                // Enqueue (n-1) output buffer IDs so that graph can start processing
-                // One FREE buffer ID remains
+                // Enqueue all output buffer IDs so that graph can start processing
                 for (vx_uint32 idx = 0; idx < producer->numBuffers; idx++)
                 {
                     producer->streaming_cb.enqueueCallback(producer->graph_obj, producer->refs[idx].ovx_ref);

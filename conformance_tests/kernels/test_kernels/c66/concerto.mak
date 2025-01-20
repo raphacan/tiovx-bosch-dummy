@@ -41,6 +41,7 @@ IDIRS       += $(VXLIB_PATH)/packages
 IDIRS       += $(TIOVX_PATH)/source/include
 IDIRS       += $(TIOVX_PATH)/source/platform/psdk_j7/common
 IDIRS       += $(PSDK_PATH)/app_utils
+IDIRS       += $(RB_VISION_APPS)
 
 ifeq ($(RTOS_SDK), mcu_plus_sdk)
 IDIRS       += $(APP_UTILS_PATH)/utils/rtos/src

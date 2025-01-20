@@ -139,4 +139,3 @@ uint32_t tivx_utils_tensor_checksum(vx_tensor tensor_object, vx_size number_of_d
 #endif
 
 #endif /* _TIVX_UTILS_CHECKSUM_H_ */
-

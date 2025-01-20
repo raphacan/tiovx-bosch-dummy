@@ -37,6 +37,9 @@ IDIRS       += $(PSDK_PATH)/app_utils/utils/mem/src
 IDIRS       += $(PSDK_QNX_PATH)/qnx/sharedmemallocator/usr/public
 IDIRS       += $(PSDK_QNX_PATH)/qnx/sharedmemallocator/resmgr/public
 endif
+IDIRS       += ${HOST_ROOT}/utils/include
+IDIRS       += $(IPPC_PATH)
+IDIRS       += $(APP_UTILS_PATH)
 
 ifeq ($(HOST_COMPILER),TIARMCGT)
 CFLAGS += --display_error_number

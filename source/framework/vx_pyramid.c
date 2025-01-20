@@ -119,9 +119,20 @@ static vx_status VX_CALLBACK pyramidKernelCallback(vx_enum kernel_enum, vx_bool 
         {
             vx_reference p2[2] = {&(vxCastRefAsPyramid(input, &status)->img[lvl]->base), &(vxCastRefAsPyramid(output, &status)->img[lvl]->base)};
             vx_kernel_callback_f kf = p2[0]->kernel_callback;
-            if (NULL != kf) /* TIOVX-1894- LDRA Uncovered Branch Id: TIOVX_BRANCH_COVERAGE_TIVX_PYRAMID_UBR009 */
+            if (NULL != kf)
             {
                 status = (*kf)(kernel_enum, (vx_bool)vx_false_e, p2[0], p2[1]);
+                if (((vx_status)VX_SUCCESS == status) &&
+                    (NULL != p2[0]->supplementary_data) &&
+                    (NULL != p2[1]->supplementary_data) &&
+                    (NULL != p2[0]->supplementary_data->base.kernel_callback))
+                {
+                    vx_reference supp_params[2] = {&p2[0]->supplementary_data->base, &p2[1]->supplementary_data->base};
+                    if (VX_SUCCESS == p2[0]->supplementary_data->base.kernel_callback(kernel_enum, (vx_bool)vx_true_e, supp_params[0], supp_params[1]))
+                    {
+                        status = p2[0]->supplementary_data->base.kernel_callback(kernel_enum, (vx_bool)vx_false_e, supp_params[0], supp_params[1]);
+                    }
+                }
             }
 #ifdef LDRA_UNTESTABLE_CODE
 /* TIOVX-1884- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_PYRAMID_UM007 */
@@ -242,9 +253,8 @@ VX_API_ENTRY vx_pyramid VX_API_CALL vxCreatePyramid(
                     {
                         prmd->img[i] = NULL;
                     }
-
                     status = ownInitPyramid(prmd);
-
+                    
                     if ((vx_status)VX_SUCCESS != status)
                     {
                         (void)vxReleasePyramid(&prmd);

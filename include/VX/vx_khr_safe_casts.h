@@ -19,6 +19,7 @@
 #define OPENVX_KHR_SAFE_CASTS  "vx_khr_safe_casts"
 
 #include <VX/vx.h>
+#include <TI/tivx_tensor.h>
 
 #ifdef  __cplusplus
 extern "C" {
@@ -69,6 +70,14 @@ __MAKE_SAFE_CASTS__(tensor, Tensor)
 __MAKE_SAFE_CASTS__(threshold, Threshold)
 #ifdef VX_TYPE_USER_DATA_OBJECT
 __MAKE_SAFE_CASTS__(user_data_object, UserDataObject)
+#endif
+
+#ifdef VX_TYPE_PRODUCER
+__MAKE_SAFE_CASTS__(producer, Producer)
+#endif
+
+#ifdef VX_TYPE_CONSUMER
+__MAKE_SAFE_CASTS__(consumer, Consumer)
 #endif
 
 #ifdef  __cplusplus

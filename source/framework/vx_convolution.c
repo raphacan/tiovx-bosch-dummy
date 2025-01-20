@@ -27,6 +27,7 @@ VX_API_ENTRY vx_convolution VX_API_CALL vxCreateConvolution(
     vx_convolution cnvl = NULL;
     vx_reference ref = NULL;
     tivx_obj_desc_convolution_t *obj_desc = NULL;
+	vx_status status = (vx_status)VX_SUCCESS;
 
     if(ownIsValidContext(context) == (vx_bool)vx_true_e)
     {
@@ -331,4 +332,3 @@ static int8_t isodd(size_t a)
     int8_t result = (((a & 1ULL) != 0ULL)? 1 : 0);
     return result;
 }
-

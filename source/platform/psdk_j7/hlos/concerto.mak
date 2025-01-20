@@ -21,12 +21,15 @@ CSOURCES    := \
     ../common/tivx_platform.c                       \
     ../common/tivx_mem.c                            \
     tivx_platform_hlos.c                            \
-    ../common/tivx_perf.c
+    ../common/tivx_perf.c                           \
+    ../common/vx_target_on_host_cpu.c               \
 
 IDIRS       += $(TIOVX_PATH)/source/include
+IDIRS       += $(TIOVX_PATH)/utils/include
 IDIRS       += $(TIOVX_PATH)/source/platform/psdk_j7/common
 IDIRS       += $(TIOVX_PATH)/source/platform/os/posix
 IDIRS       += $(APP_UTILS_PATH)
+IDIRS       += $(IPPC_PATH)
 DEFS        += LDRA_UNTESTABLE_CODE
 # This is used to signify which sections of code is only applicable
 # for the host for code coverage purposes. It has been left defined

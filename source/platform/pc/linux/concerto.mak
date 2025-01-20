@@ -25,6 +25,7 @@ CSOURCES    := \
 	$(COMMON_FILES_REL_PATH)/tivx_host.c \
 	$(COMMON_FILES_REL_PATH)/tivx_target_config_pc.c \
 	$(COMMON_FILES_REL_PATH)/tivx_platform_common.c \
+	$(COMMON_FILES_REL_PATH)/vx_target_on_host_cpu.c \
     tivx_platform.c
 
 DEFS        += LDRA_UNTESTABLE_CODE
@@ -34,7 +35,7 @@ DEFS        += LDRA_UNTESTABLE_CODE
 # code coverage reports.
 DEFS        += HOST_ONLY
 
-IDIRS += $(TIOVX_PATH)/source/include $(COMMON_FILES_BASE_PATH)
+IDIRS += $(TIOVX_PATH)/source/include $(COMMON_FILES_BASE_PATH) $(TIOVX_PATH)/utils/include $(IPPC_PATH)
 IDIRS += $(APP_UTILS_PATH)
 IDIRS += $(VISION_APPS_PATH)/platform/$(SOC)/rtos
 IDIRS += $(TIOVX_PATH)/source/platform/os/posix

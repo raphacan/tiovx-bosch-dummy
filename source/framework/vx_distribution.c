@@ -22,7 +22,6 @@ VX_API_ENTRY vx_distribution VX_API_CALL vxCreateDistribution(vx_context context
 {
     vx_distribution dist = NULL;
     tivx_obj_desc_distribution_t *obj_desc = NULL;
-
     if(ownIsValidContext(context) == (vx_bool)vx_true_e)
     {
         vx_reference ref;

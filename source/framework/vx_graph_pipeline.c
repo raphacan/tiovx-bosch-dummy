@@ -70,7 +70,7 @@ static tivx_obj_desc_graph_t *ownGraphGetObjDesc(vx_graph graph, uint32_t pipeli
 static vx_status ownGraphPipelineValidateRefsList(
                      const vx_graph_parameter_queue_params_t graph_parameters_queue_param);
 
-static vx_status ownDecrementEnqueueCount(vx_reference ref); // part of RBOVX-98
+static vx_status ownDecrementEnqueueCount(vx_reference ref);
 
 static vx_status ownGraphPipelineValidateRefsList(
     const vx_graph_parameter_queue_params_t graph_parameters_queue_param)
@@ -315,10 +315,10 @@ vx_status tivxGraphParameterEnqueueReadyRef(vx_graph graph,
         vx_uint32 ref_id;
         vx_uint32 num_enqueue = 0;
 
-        for(ref_id=0; ref_id < num_refs && (vx_status)VX_SUCCESS == status; ref_id++)
+        for(ref_id=0; (ref_id < num_refs) && ((vx_status)VX_SUCCESS == status); ref_id++)
         {
             vx_reference ref = refs[ref_id];
-            status = VX_FAILURE;
+            status = (vx_status)VX_FAILURE;
             if (NULL != ref)
             {
                 const tivx_obj_desc_node_t *nobj = graph->parameters[graph_parameter_index].node->obj_desc[0];
@@ -346,28 +346,30 @@ vx_status tivxGraphParameterEnqueueReadyRef(vx_graph graph,
                         tivx_obj_desc_t *objd = ref->obj_desc;
                         vx_reference const * ref_list = NULL;
                         vx_bool can_be_queued = vx_true_e;
-                        if ((vx_bool)is_replicated == vx_true_e)
+                        if (is_replicated == (vx_bool)vx_true_e)
                         {
                             objd = ref->scope->obj_desc;
-                            if ((vx_enum)VX_TYPE_OBJECT_ARRAY == ref->scope->type)
+                           if (ownIsValidSpecificReference(ref->scope, (vx_enum)VX_TYPE_OBJECT_ARRAY) == (vx_bool)vx_true_e)
                             {
-                                ref_list = ((vx_object_array)ref->scope)->ref; // mfl7si add safecast
+                                vx_object_array object_array = vxCastRefAsObjectArray(ref->scope, NULL);
+                                ref_list = object_array->ref;
                             }
-                            else if ((vx_enum)VX_TYPE_PYRAMID == ref->scope->type)
+                            else if (ownIsValidSpecificReference(ref->scope, (vx_enum)VX_TYPE_PYRAMID) == (vx_bool)vx_true_e)
                             {
-                                ref_list = (vx_reference *)(uintptr_t)((vx_pyramid)ref->scope)->img; // mfl7si add safecast
+                                vx_pyramid pyramid = vxCastRefAsPyramid(ref->scope, NULL);
+                                ref_list = (vx_reference *)(uintptr_t)(pyramid->img);                            
                             }
                             else
                             {
                                 /* Should not happen, but if it does, complain! */
-                                can_be_queued = vx_false_e;
+                                can_be_queued = (vx_bool)vx_false_e;
                                 VX_PRINT(VX_ZONE_ERROR, "Found a scope (%d) that was not object array or pyramid!\n", ref->scope->type);
                             }
                         }
                         if ((tivxFlagIsBitSet(objd->flags, TIVX_OBJ_DESC_DATA_REF_GRAPH_PARAM_ENQUEUED) == (vx_bool)vx_true_e) ||
                             ( ((vx_bool)vx_false_e == is_input) && (objd->num_enqueues > 0)))
                         {
-                            can_be_queued = vx_false_e;
+                            can_be_queued = (vx_bool)vx_false_e;
                         }
                         else if (NULL != ref_list)
                         {
@@ -378,12 +380,12 @@ vx_status tivxGraphParameterEnqueueReadyRef(vx_graph graph,
                                 if (NULL == odi)
                                 {
                                     VX_PRINT(VX_ZONE_ERROR, "Could not get object descriptor from list!\n");
-                                    can_be_queued = vx_false_e;
+                                    can_be_queued = (vx_bool)vx_false_e;
                                 }
                                 else if ((tivxFlagIsBitSet(odi->flags, TIVX_OBJ_DESC_DATA_REF_GRAPH_PARAM_ENQUEUED) == (vx_bool)vx_true_e) ||
-                                    ( ((vx_bool)vx_false_e == is_input) && odi->num_enqueues > 0U))
+                                    (((vx_bool)vx_false_e == is_input) && (odi->num_enqueues > 0U)))
                                 {
-                                    can_be_queued = vx_false_e;
+                                    can_be_queued = (vx_bool)vx_false_e;
                                     break;
                                 } else { /* do nothing */ }
                             }
@@ -468,7 +470,7 @@ vx_status tivxGraphParameterEnqueueReadyRef(vx_graph graph,
         if((vx_status)VX_SUCCESS == status && num_enqueue > 0U)
         {
             /* Note: keeping compatibility with deprecated API */
-            if( graph->parameters[graph_parameter_index].node->obj_desc[0]->pipeup_buf_idx > 1U )
+            if((flags & TIVX_GRAPH_PARAMETER_ENQUEUE_FLAG_PIPEUP) != 0U)
             {
                 /* if enqueueing buffers for pipeup then dont schedule graph,
                  * just enqueue the buffers
@@ -578,12 +580,14 @@ VX_API_ENTRY vx_status VX_API_CALL vxGraphParameterDequeueDoneRef(vx_graph graph
                         }
                         if (ownIsValidSpecificReference(ref, (vx_enum)VX_TYPE_OBJECT_ARRAY) == (vx_bool)vx_true_e)
                         {
-                            ref_list = ((vx_object_array)(ref))->ref; // mfl7si safecast
+                            vx_object_array object_array = vxCastRefAsObjectArray(ref, NULL);
+                            ref_list = object_array->ref;
                             status = ownDecrementEnqueueCount(ref);
                         }
                         else if (ownIsValidSpecificReference(ref, (vx_enum)VX_TYPE_PYRAMID) == (vx_bool)vx_true_e)
                         {
-                            ref_list = (vx_reference *)(uintptr_t)((vx_pyramid)(ref))->img; // mfl7si safecast
+                            vx_pyramid pyramid = vxCastRefAsPyramid(ref, NULL);
+                            ref_list = (vx_reference *)(uintptr_t)(pyramid->img);
                             status = ownDecrementEnqueueCount(ref);
                         }
                         else 

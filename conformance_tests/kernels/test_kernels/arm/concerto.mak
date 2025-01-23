@@ -15,6 +15,7 @@ IDIRS       += $(RB_VISION_APPS)
 IDIRS       += ${TIOVX_PATH}/utils/include
 IDIRS       += $(IPPC_PATH)
 IDIRS       += $(APP_UTILS_PATH)
+IDIRS       += $(TIOVX_PATH)/source/platform/os/posix
 
 include $(FINALE)
 

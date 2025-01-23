@@ -2256,15 +2256,6 @@ VX_API_ENTRY vx_status VX_API_CALL vxVerifyGraph(vx_graph graph)
                     /* Optimise out Copy and Move nodes where possible */
                     status = ownGraphProcessCopyMoveNodes(graph);
                 }
-                else
-                {
-                    /* Optimise out Copy and Move nodes where possible */
-                    status = ownGraphProcessCopyMoveNodes(graph);
-                }
-
-                if(status == (vx_status)VX_SUCCESS)
-                {
-                    vx_bool has_cycle = (vx_bool)vx_false_e;
 
                 if(status == (vx_status)VX_SUCCESS)
                 {

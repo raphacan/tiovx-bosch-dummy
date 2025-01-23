@@ -238,6 +238,7 @@ static vx_reference ownCreateMatrixFromExemplar(
 static vx_reference ownCreatePyramidFromExemplar(
     vx_context context, vx_pyramid exemplar)
 {
+    vx_status status;
     vx_size levels;
     vx_float32 scale;
     vx_uint32 width, height;

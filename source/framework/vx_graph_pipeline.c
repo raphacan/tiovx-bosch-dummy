@@ -470,7 +470,14 @@ vx_status tivxGraphParameterEnqueueReadyRef(vx_graph graph,
         if((vx_status)VX_SUCCESS == status && num_enqueue > 0U)
         {
             /* Note: keeping compatibility with deprecated API */
-            if( graph->parameters[graph_parameter_index].node->obj_desc[0]->pipeup_buf_idx > 1U )
+            if((flags & TIVX_GRAPH_PARAMETER_ENQUEUE_FLAG_PIPEUP) != 0U)
+            {
+                /* if enqueueing buffers for pipeup then dont schedule graph,
+                 * just enqueue the buffers
+                 */
+                graph->parameters[graph_parameter_index].node->obj_desc[0]->pipeup_buf_idx--;
+            }            
+            else if( graph->parameters[graph_parameter_index].node->obj_desc[0]->pipeup_buf_idx > 1U )
             {
                 /* if enqueueing buffers for pipeup then dont schedule graph,
                  * just enqueue the buffers
@@ -640,8 +647,6 @@ VX_API_ENTRY vx_status VX_API_CALL vxGraphParameterDequeueDoneRef(vx_graph graph
                         exit_loop = vx_true_e;
                     }
                 }
-/* END: TIOVX_CODE_COVERAGE_GRAPH_PIPELINE_UTJT009 */
-#endif
 #ifdef LDRA_UNTESTABLE_CODE
 /* TIOVX-1720- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_PIPELINE_UM007 */
                 else

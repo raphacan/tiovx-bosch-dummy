@@ -781,6 +781,7 @@ static vx_node test_user_kernel_objarr_node(vx_graph graph,
                 );
 
     return node;
+}
 /* Function to get a parameter, add it to a graph and then release it */
 static void addParameterToGraph(vx_graph graph, vx_node node, vx_uint32 num)
 {

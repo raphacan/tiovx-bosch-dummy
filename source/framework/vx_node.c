@@ -976,7 +976,7 @@ vx_status ownNodeUserKernelExecute(vx_node node, vx_reference prm_ref[])
                         }
                     }
 
-                    ownNodeUserKernelSetParamsAccesible(prm_ref, num_params, (vx_bool)vx_true_e);
+                    ownNodeUserKernelSetParamsAccesible(node->kernel, prm_ref, num_params, (vx_bool)vx_true_e);
 
                     /* user has given user kernel function so call it */
                     status = node->kernel->function(node, prm_ref, num_params);

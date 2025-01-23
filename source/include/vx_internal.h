@@ -25,9 +25,11 @@
 
 #include <VX/vx.h>
 #include <VX/vx_khr_pipelining.h>
+#if defined(BUILD_GW)
 #if defined(LINUX) || defined(QNX)
 #include <VX/vx_khr_producer.h>
 #include <VX/vx_khr_consumer.h>
+#endif
 #endif
 #include <VX/vx_khr_swap_move.h>
 #include <VX/vx_khr_supplementary_data.h>
@@ -74,9 +76,11 @@
 #include <vx_objarray.h>
 #include <vx_array.h>
 #include <vx_user_data_object.h>
+#if defined(BUILD_GW)
 #if defined(LINUX) || defined(QNX)
 #include <vx_producer.h>
 #include <vx_consumer.h>
+#endif
 #endif
 #include <tivx_raw_image.h>
 #include <tivx_super_node.h>

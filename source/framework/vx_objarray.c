@@ -64,6 +64,8 @@ static vx_status VX_CALLBACK objectArrayKernelCallback(vx_enum kernel_enum, vx_b
                     }
                 }                  
             }
+#ifdef LDRA_UNTESTABLE_CODE
+/* TIOVX-1706- LDRA Uncovered Id: TIOVX_CODE_COVERAGE_OBJARRAY_UM006 */
             else
             {
                 status = (vx_status)VX_ERROR_NOT_SUPPORTED;

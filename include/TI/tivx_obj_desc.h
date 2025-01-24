@@ -313,7 +313,7 @@ typedef struct _tivx_obj_desc_t {
     volatile uint16_t scope_obj_desc_id;
 
     /*! \brief number of input nodes that have consumed this obj_desc, used in pipelining mode only for data references */
-    volatile uint16_t in_node_done_cnt[TIVX_GRAPH_MAX_PIPELINE_DEPTH - 1U];
+    volatile uint16_t in_node_done_cnt[TIVX_GRAPH_MAX_PIPELINE_DEPTH];
 
     /*! \brief Host reference, accessible only on HOST side */
     volatile uint64_t host_ref;
@@ -337,7 +337,7 @@ typedef struct _tivx_obj_desc_t {
     volatile uint16_t supp_data_id;
   
     /*! \brief reserved to make 64b aligned */
-    volatile uint16_t rsv0;
+    //volatile uint16_t rsv0;
 
     /*! \brief holds the index of the IPC port on OpenVX host for this object descriptor for each remote CPU
      *

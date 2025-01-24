@@ -183,7 +183,7 @@ tivx_obj_desc_t *ownObjDescAlloc(vx_enum ref_type, vx_reference ref)
             /* init entry that is found */
             tmp_obj_desc->obj_desc_id = (uint16_t)idx;
             tmp_obj_desc->scope_obj_desc_id = (vx_enum)TIVX_OBJ_DESC_INVALID;
-            for (uint16_t pipeId = 0; pipeId < (TIVX_GRAPH_MAX_PIPELINE_DEPTH - 1U); pipeId++)
+            for (uint16_t pipeId = 0; pipeId < (uint16_t)TIVX_GRAPH_MAX_PIPELINE_DEPTH; pipeId++)
             {
                 tmp_obj_desc->in_node_done_cnt[pipeId] = 0;
             }

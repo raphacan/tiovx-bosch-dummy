@@ -564,11 +564,11 @@ VX_API_ENTRY vx_status VX_API_CALL vxRegisterEvent(vx_reference ref, enum vx_eve
 /*!
  * \brief Registers an event for a specific graph
  *
- * \param [in] graph        the graph for which the event will be registered
- * \param [in] type         only VX_EVENT_GRAPH_PARAMETER is supported
- * \param [in] param        Specifies the graph parameter index when *type* is VX_EVENT_GRAPH_PARAMETER_CONSUMED
- * \param [in] app_value    Application-specified value that will be returned to user as part of vx_event_t.app_value field.
- *                          Stored by the implementation but not used for any other purpose.
+ * \param [in] graph_or_node the graph or node for which the event will be registered
+ * \param [in] type          only VX_EVENT_GRAPH_PARAMETER is supported
+ * \param [in] param         Specifies the graph parameter index when *type* is VX_EVENT_GRAPH_PARAMETER_CONSUMED
+ * \param [in] app_value     Application-specified value that will be returned to user as part of vx_event_t.app_value field.
+ *                           Stored by the implementation but not used for any other purpose.
  * \return a vx_status value.
  * \retval VX_SUCCESS                   the event was registered
  * \retval VX_ERROR_NOT_SUPPORTED       type not equal to VX_EVENT_GRAPH_PARAMETER or graph already verified
@@ -579,7 +579,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxRegisterEvent(vx_reference ref, enum vx_eve
  * Notice that there is only one app_value per graph parameter.
  * 
  */
-VX_API_ENTRY vx_status VX_API_CALL vxRegisterGraphEvent(vx_graph graph, enum vx_event_type_e type, vx_uint32 param, vx_uint32 app_value);
+VX_API_ENTRY vx_status VX_API_CALL vxRegisterGraphEvent(vx_reference graph_or_node, enum vx_event_type_e type, vx_uint32 param, vx_uint32 app_value);
 
 /*!
  * \brief Waits for an event from a specific graph

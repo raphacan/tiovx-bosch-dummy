@@ -17,6 +17,7 @@
 #include "test_tiovx.h"
 #include <VX/vx.h>
 #include <VX/vxu.h>
+#include <VX/vx_khr_safe_casts.h>
 #include <VX/vx_khr_pipelining.h>
 #include <TI/tivx.h>
 #include <TI/tivx_config.h>
@@ -7617,11 +7618,11 @@ TEST(tivxGraphPipeline2, testGraphEvent)
     vx_node node = vxNotNode(graph, images[0], images[1]);
     addParameterToGraph(graph, node, 0);
     ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_REFERENCE, vxRegisterGraphEvent(NULL, VX_EVENT_GRAPH_PARAMETER_CONSUMED, 0, 0));
-    ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_REFERENCE, vxRegisterGraphEvent((vx_graph)context, VX_EVENT_GRAPH_PARAMETER_CONSUMED, 0, 0));
-    ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_PARAMETERS, vxRegisterGraphEvent(graph, VX_EVENT_GRAPH_PARAMETER_CONSUMED, 1, 0));
-    ASSERT_EQ_VX_STATUS(VX_ERROR_NOT_SUPPORTED, vxRegisterGraphEvent(graph, VX_EVENT_GRAPH_COMPLETED, 0, 0));
+    ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_REFERENCE, vxRegisterGraphEvent(vxCastRefFromContext(context), VX_EVENT_GRAPH_PARAMETER_CONSUMED, 0, 0));
+    ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_PARAMETERS, vxRegisterGraphEvent(vxCastRefFromGraph(graph), VX_EVENT_GRAPH_PARAMETER_CONSUMED, 1, 0));
+    ASSERT_EQ_VX_STATUS(VX_ERROR_NOT_SUPPORTED, vxRegisterGraphEvent(vxCastRefFromGraph(graph), VX_EVENT_GRAPH_COMPLETED, 0, 0));
     ASSERT_EQ_VX_STATUS(VX_SUCCESS, vxVerifyGraph(graph));
-    ASSERT_EQ_VX_STATUS(VX_ERROR_NOT_SUPPORTED, vxRegisterGraphEvent(graph, VX_EVENT_GRAPH_PARAMETER_CONSUMED, 0, 0));
+    ASSERT_EQ_VX_STATUS(VX_ERROR_NOT_SUPPORTED, vxRegisterGraphEvent(vxCastRefFromGraph(graph), VX_EVENT_GRAPH_PARAMETER_CONSUMED, 0, 0));
     VX_CALL(vxReleaseNode(&node));
     VX_CALL(vxReleaseGraph(&graph));
     graph = vxCreateGraph(context);
@@ -7638,11 +7639,11 @@ TEST(tivxGraphPipeline2, testGraphEvent)
         {.graph_parameter_index = 2, .refs_list = (vx_reference *)&images[2], .refs_list_size = 1}
     };
     ASSERT_EQ_VX_STATUS(VX_SUCCESS, vxSetGraphScheduleConfig(graph, VX_GRAPH_SCHEDULE_MODE_QUEUE_AUTO, 3, graph_params));
-    ASSERT_EQ_VX_STATUS(VX_SUCCESS, vxRegisterEvent((vx_reference)graph, VX_EVENT_GRAPH_PARAMETER_CONSUMED, 0, 100));
-    ASSERT_EQ_VX_STATUS(VX_SUCCESS, vxRegisterGraphEvent(graph, VX_EVENT_GRAPH_PARAMETER_CONSUMED, 1, 111));
-    ASSERT_EQ_VX_STATUS(VX_SUCCESS, vxRegisterGraphEvent(graph, VX_EVENT_GRAPH_PARAMETER_CONSUMED, 2, 111));
-    ASSERT_EQ_VX_STATUS(VX_SUCCESS, vxRegisterGraphEvent(graph, VX_EVENT_GRAPH_PARAMETER_CONSUMED, 0, 222));
-    ASSERT_EQ_VX_STATUS(VX_SUCCESS, vxRegisterGraphEvent(graph, VX_EVENT_GRAPH_PARAMETER_CONSUMED, 2, 123));
+    ASSERT_EQ_VX_STATUS(VX_SUCCESS, vxRegisterEvent(vxCastRefFromGraph(graph), VX_EVENT_GRAPH_PARAMETER_CONSUMED, 0, 100));
+    ASSERT_EQ_VX_STATUS(VX_SUCCESS, vxRegisterGraphEvent(vxCastRefFromGraph(graph), VX_EVENT_GRAPH_PARAMETER_CONSUMED, 1, 111));
+    ASSERT_EQ_VX_STATUS(VX_SUCCESS, vxRegisterGraphEvent(vxCastRefFromNode(node), VX_EVENT_GRAPH_PARAMETER_CONSUMED, 2, 111));
+    ASSERT_EQ_VX_STATUS(VX_SUCCESS, vxRegisterGraphEvent(vxCastRefFromGraph(graph), VX_EVENT_GRAPH_PARAMETER_CONSUMED, 0, 222));
+    ASSERT_EQ_VX_STATUS(VX_SUCCESS, vxRegisterGraphEvent(vxCastRefFromGraph(graph), VX_EVENT_GRAPH_PARAMETER_CONSUMED, 2, 123));
     vx_event_t events[3];
     ASSERT_EQ_VX_STATUS(VX_SUCCESS, vxEnableGraphEvents(graph));
     ASSERT_EQ_VX_STATUS(VX_SUCCESS, vxEnableEvents(context));

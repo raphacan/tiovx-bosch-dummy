@@ -399,35 +399,50 @@ vx_status ownRegisterEvent(vx_reference ref,
     return status;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxRegisterGraphEvent(vx_graph graph, enum vx_event_type_e type, vx_uint32 param, vx_uint32 app_value)
+VX_API_ENTRY vx_status VX_API_CALL vxRegisterGraphEvent(vx_reference graph_or_node, enum vx_event_type_e type, vx_uint32 param, vx_uint32 app_value)
 {
     vx_status status = (vx_status)VX_SUCCESS;
+    vx_graph graph;
+    vx_node node;
     if (VX_EVENT_GRAPH_PARAMETER_CONSUMED != type)
     {
         VX_PRINT(VX_ZONE_ERROR, "Only VX_EVENT_GRAPH_PARAMETER_CONSUMED supported\n");
         status = (vx_status)VX_ERROR_NOT_SUPPORTED;
     }
-    else if ((vx_bool)vx_false_e == ownIsValidSpecificReference(vxCastRefFromGraph(graph), (vx_enum )VX_TYPE_GRAPH))
+    else if ((vx_bool)vx_true_e == ownIsValidSpecificReference(graph_or_node, (vx_enum )VX_TYPE_GRAPH))
+    {
+        graph = vxCastRefAsGraph(graph_or_node, NULL);
+    }
+    else if ((vx_bool)vx_true_e == ownIsValidSpecificReference(graph_or_node, (vx_enum )VX_TYPE_NODE))
+    {
+        node = vxCastRefAsNode(graph_or_node, NULL);
+        graph = node->graph;
+    }
+    else
     {
         VX_PRINT(VX_ZONE_ERROR, "Invalid reference\n");
         status = (vx_status)VX_ERROR_INVALID_REFERENCE;
     }
-    else if (param >= graph->num_params)
+
+    if ((vx_status)VX_SUCCESS == status)
     {
-        VX_PRINT(VX_ZONE_ERROR, "Index out of range\n");
-        status = (vx_status)VX_ERROR_INVALID_PARAMETERS;
-    }
-    else if ((vx_bool)vx_true_e == graph->verified)
-    {
-        VX_PRINT(VX_ZONE_ERROR, "Cannot register event on verified graph\n");
-        status = (vx_status)VX_ERROR_NOT_SUPPORTED;
-    }
-    else
-    {
-        graph->parameters[param].is_enable_send_ref_consumed_graph_event = (vx_bool)vx_true_e;
-        graph->parameters[param].graph_consumed_app_value = app_value;
-        VX_PRINT(VX_ZONE_INFO, "Enabling parameter ref consumed graph event at graph [%s], param %d\n",
-                    graph->base.name, param);
+        if (param >= graph->num_params)
+        {
+            VX_PRINT(VX_ZONE_ERROR, "Index out of range\n");
+            status = (vx_status)VX_ERROR_INVALID_PARAMETERS;
+        }
+        else if ((vx_bool)vx_true_e == graph->verified)
+        {
+            VX_PRINT(VX_ZONE_ERROR, "Cannot register event on verified graph\n");
+            status = (vx_status)VX_ERROR_NOT_SUPPORTED;
+        }
+        else
+        {
+            graph->parameters[param].is_enable_send_ref_consumed_graph_event = (vx_bool)vx_true_e;
+            graph->parameters[param].graph_consumed_app_value = app_value;
+            VX_PRINT(VX_ZONE_INFO, "Enabling parameter ref consumed graph event at graph [%s], param %d\n",
+                        graph->base.name, param);
+        }
     }
     return status;
 }

@@ -7473,19 +7473,21 @@ TEST(tivxGraphPipeline2, testDoubleInputEnqueue)
 {
     /* We should be able to enqueue the same reference on two separate inputs on the same graph 
       and also on another graph at the same time */
-    vx_status status;    
+    vx_status status;
+    vx_graph graph1, graph2;
+    vx_node node1, node2;
     vx_context context = context_->vx_context_;
 
-    vx_graph graph1 = vxCreateGraph(context);
-    vx_graph graph2 = vxCreateGraph(context);
+    ASSERT_VX_OBJECT(graph1 = vxCreateGraph(context), VX_TYPE_GRAPH);
+    ASSERT_VX_OBJECT(graph2 = vxCreateGraph(context), VX_TYPE_GRAPH);
     vx_image images[3] =
     {
         vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8),
         vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8),
         vxCreateImage(context, 10, 10, VX_DF_IMAGE_U8)
     };
-    vx_node node1 = vxAndNode(graph1, images[0], images[1], images[2]);
-    vx_node node2 = vxAndNode(graph2, images[0], images[1], images[2]);
+    ASSERT_VX_OBJECT(node1 = vxAndNode(graph1, images[0], images[1], images[2]), VX_TYPE_NODE);
+    ASSERT_VX_OBJECT(node2 = vxAndNode(graph2, images[0], images[1], images[2]), VX_TYPE_NODE);
     addParameterToGraph(graph1, node1, 0); /* Input */
     addParameterToGraph(graph1, node1, 1); /* Input */
     addParameterToGraph(graph1, node1, 2); /* Output */

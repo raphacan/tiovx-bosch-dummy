@@ -7693,8 +7693,8 @@ TEST(tivxGraphPipeline2, testGraphEvent)
     ASSERT_EQ_INT((int)(uintptr_t)events->event_info.user_event.user_event_parameter, 987);
     vx_uint32 ref_count;
     vx_uint64 wrong_ref_count;;
-    ASSERT_EQ_VX_STATUS(vxQueryReference((vx_reference)images[0], TIVX_REFERENCE_ENQUEUE_COUNT, &wrong_ref_count, sizeof(wrong_ref_count)), VX_ERROR_INVALID_PARAMETERS);
-    ASSERT_EQ_VX_STATUS(vxQueryReference((vx_reference)images[0], TIVX_REFERENCE_ENQUEUE_COUNT, &ref_count, sizeof(ref_count)), VX_SUCCESS);
+    ASSERT_EQ_VX_STATUS(vxQueryReference((vx_reference)images[0], VX_REFERENCE_ENQUEUE_COUNT, &wrong_ref_count, sizeof(wrong_ref_count)), VX_ERROR_INVALID_PARAMETERS);
+    ASSERT_EQ_VX_STATUS(vxQueryReference((vx_reference)images[0], VX_REFERENCE_ENQUEUE_COUNT, &ref_count, sizeof(ref_count)), VX_SUCCESS);
     ASSERT_EQ_VX_STATUS(VX_ERROR_INVALID_REFERENCE, vxDisableGraphEvents(node));
     ASSERT_EQ_VX_STATUS(VX_SUCCESS, vxDisableGraphEvents(graph));
     VX_CALL(vxReleaseNode(&node));

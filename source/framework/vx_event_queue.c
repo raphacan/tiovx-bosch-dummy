@@ -211,7 +211,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxDisableEvents(vx_context context)
     return status;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxSendUserEvent(vx_context context, vx_uint32 app_value, const void *parameter)
+VX_API_ENTRY vx_status VX_API_CALL vxSendUserEvent(vx_context context, vx_uint32 app_value, void *parameter)
 {
     vx_status status;
 
@@ -488,7 +488,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxDisableGraphEvents(vx_graph graph)
     return status;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxSendUserGraphEvent(vx_graph graph, vx_uint32 app_value, const void *parameter)
+VX_API_ENTRY vx_status VX_API_CALL vxSendUserGraphEvent(vx_graph graph, vx_uint32 app_value, void *parameter)
 {
     vx_status status;
 

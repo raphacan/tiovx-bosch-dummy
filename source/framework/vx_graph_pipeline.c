@@ -172,22 +172,24 @@ static vx_status ownGraphPipelineValidateRefsList(
 
 static vx_status ownDecrementEnqueueCount(vx_reference ref)
 {
+    vx_status status = (vx_status)VX_SUCCESS;
     ref->obj_desc->flags &= ~TIVX_OBJ_DESC_DATA_REF_GRAPH_PARAM_ENQUEUED;
     if (ref->obj_desc->num_enqueues > 0U)
     {
         ref->obj_desc->num_enqueues --;
-        return VX_SUCCESS;
+        status = (vx_status)VX_SUCCESS;
     }
     else if (NULL == ref->delay)
     {
         VX_PRINT(VX_ZONE_ERROR, "Reference enqueue count underflow!, ref=%p, type=%d, name=%s \n", ref, ref->type, ref->name);
-        return VX_FAILURE;
+        status = (vx_status)VX_FAILURE;
     }
     else
     {
         /* for a delay, ignore the count if it was already zero, this is the case for pipelining */
-        return VX_SUCCESS;
+        status = (vx_status)VX_SUCCESS;
     }
+    return status;
 }
 
 VX_API_ENTRY vx_status vxSetGraphScheduleConfig(
@@ -376,6 +378,7 @@ vx_status tivxGraphParameterEnqueueReadyRef(vx_graph graph,
                             vx_uint32 i;
                             for (i = 0; i < num_replicas; ++i)
                             {
+                                /* loop over the replicats object descriptor */
                                 tivx_obj_desc_t const * odi = ref_list[i]->obj_desc;
                                 if (NULL == odi)
                                 {
@@ -425,6 +428,7 @@ vx_status tivxGraphParameterEnqueueReadyRef(vx_graph graph,
                                     vx_uint32 i;
                                     for (i = 0; i < num_replicas; ++i)
                                     {
+                                        /* loop over the replicats object descriptor */
                                         tivx_obj_desc_t *odi = ref_list[i]->obj_desc;
                                         /* Increment the queue counter */
                                         odi->num_enqueues ++;
@@ -467,18 +471,10 @@ vx_status tivxGraphParameterEnqueueReadyRef(vx_graph graph,
             }
         }
 
-        if((vx_status)VX_SUCCESS == status && num_enqueue > 0U)
+        if(((vx_status)VX_SUCCESS == status) && (num_enqueue > 0U))
         {
             /* Note: keeping compatibility with deprecated API */
-            if((flags & TIVX_GRAPH_PARAMETER_ENQUEUE_FLAG_PIPEUP) != 0U)
-            {
-                /* if enqueueing buffers for pipeup then dont schedule graph,
-                 * just enqueue the buffers
-                 */
-                graph->parameters[graph_parameter_index].node->obj_desc[0]->pipeup_buf_idx = graph->parameters[graph_parameter_index].node->obj_desc[0]->pipeup_buf_idx - 1U;
-            }
-            /* Note: once pipeup_buf_idx == 1, the source node is in steady state */
-            else if (graph->parameters[graph_parameter_index].node->obj_desc[0]->pipeup_buf_idx > 1U)
+            if (graph->parameters[graph_parameter_index].node->obj_desc[0]->pipeup_buf_idx > 1U)
             {
                 graph->parameters[graph_parameter_index].node->obj_desc[0]->pipeup_buf_idx = graph->parameters[graph_parameter_index].node->obj_desc[0]->pipeup_buf_idx - 1U;
             }
@@ -597,8 +593,8 @@ VX_API_ENTRY vx_status VX_API_CALL vxGraphParameterDequeueDoneRef(vx_graph graph
                         if (NULL != ref_list)
                         {
                             ref = ref_list[0];
-                            for (i = 0; i < num_replicas &&
-                                 (vx_status)VX_SUCCESS == status; ++i)
+                            for (i = 0; (i < num_replicas) &&
+                                 ((vx_status)VX_SUCCESS == status); ++i)
                             {
                                 status = ownDecrementEnqueueCount(ref_list[i]);
                             }
